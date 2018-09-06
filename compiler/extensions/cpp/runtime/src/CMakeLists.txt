@@ -63,6 +63,20 @@ if (ZSERIO_RUNTIME_INCLUDE_RPC_CURL)
     )
 endif ()
 
+if (ZSERIO_RUNTIME_INCLUDE_PUBSUB)
+    set(ZSERIO_CPP_RUNTIME_LIB_SRCS
+	${ZSERIO_CPP_RUNTIME_LIB_SRCS}
+        zserio/Publisher.cpp
+        zserio/Publisher.h
+        zserio/PubSubSystem.cpp
+        zserio/PubSubSystem.h
+        zserio/Subscriber.cpp
+        zserio/Subscriber.h
+        zserio/Topic.cpp
+        zserio/Topic.h
+    )
+endif ()
+
 if (CMAKE_SIZEOF_VOID_P EQUAL 8)
     # allows bit stream reader optimization for 64bit platforms
     set_property(SOURCE zserio/BitStreamReader.cpp
@@ -77,5 +91,9 @@ if (ZSERIO_RUNTIME_INCLUDE_RPC_CURL)
     target_link_libraries(ZserioCppRuntime PUBLIC ${CURL_LIBRARIES})
     target_include_directories(ZserioCppRuntime PUBLIC ${CURL_INCLUDE_DIRS})
     set(ZSERIO_CXX_STANDARD 11)
+endif ()
+
+if (ZSERIO_RUNTIME_INCLUDE_PUBSUB)
+    target_link_libraries(ZserioCppRuntime PUBLIC mosquitto)
 endif ()
 

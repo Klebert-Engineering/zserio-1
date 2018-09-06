@@ -46,6 +46,16 @@ public class ZserioParserTest
     }
 
     @Test
+    public void topicDeclaration()
+    {
+        checkParseTree("topicDeclaration",
+                       "topic A(\"string\", uint32);",
+                       "(topicDeclaration topic " +
+                       "(id A) ( \"string\" , (typeReference (builtinType (intType uint32))) ) " +
+                       ";)");
+    }
+
+    @Test
     public void constDeclaration()
     {
         checkParseTree("constDeclaration", "const uint32 C = 10;",

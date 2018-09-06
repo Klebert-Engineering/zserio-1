@@ -12,6 +12,7 @@ import zserio.ast.SqlTableType;
 import zserio.ast.StructureType;
 import zserio.ast.Subtype;
 import zserio.ast.UnionType;
+import zserio.ast.TopicType;
 
 /**
  * Implements the Emitter interface and does nothing.
@@ -74,5 +75,9 @@ public abstract class DefaultEmitter implements Emitter
 
     @Override
     public void beginService(ServiceType service) throws ZserioEmitException
+    {}
+
+    @Override
+    public void beginTopic(TopicType topic) throws ZserioEmitException
     {}
 }
