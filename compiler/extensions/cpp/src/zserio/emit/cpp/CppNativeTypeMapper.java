@@ -15,6 +15,7 @@ import zserio.ast.FloatType;
 import zserio.ast.FunctionType;
 import zserio.ast.IntegerType;
 import zserio.ast.ServiceType;
+import zserio.ast.TopicType;
 import zserio.ast.StructureType;
 import zserio.ast.SignedBitFieldType;
 import zserio.ast.SqlDatabaseType;
@@ -303,6 +304,12 @@ public class CppNativeTypeMapper
         }
 
         @Override
+        public void visitTopicType(TopicType type)
+        {
+            mapObjectArray();
+        }
+
+        @Override
         public void visitSqlTableType(SqlTableType type)
         {
             // not supported
@@ -569,6 +576,12 @@ public class CppNativeTypeMapper
 
         @Override
         public void visitSqlDatabaseType(SqlDatabaseType type)
+        {
+            mapCompoundType(type);
+        }
+
+        @Override
+        public void visitTopicType(TopicType type)
         {
             mapCompoundType(type);
         }

@@ -62,4 +62,10 @@ public abstract class DefaultEmitter implements Emitter
 
     @Override
     public void beginService(ServiceType service) throws ZserioEmitException {}
+
+    @Override
+    public void beginTopic(AST t) {}
+
+    @Override
+    public void endTopic(AST t) {}
 }

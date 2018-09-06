@@ -160,4 +160,7 @@ public interface Emitter
      * @throws In case of any internal error of the extension.
      */
     public void beginService(ServiceType service) throws ZserioEmitException;
+
+    public void beginTopic(AST t);
+    public void endTopic(AST t);
 }

@@ -51,6 +51,7 @@ importDeclaration
 commandDeclaration
     :   constDeclaration |
         subtypeDeclaration |
+        topicDeclaration |
         structureDeclaration |
         choiceDeclaration |
         unionDeclaration |
@@ -72,6 +73,10 @@ constDeclaration
  */
 subtypeDeclaration
     :   #(SUBTYPE definedType ID)
+    ;
+
+topicDeclaration
+    :   #(TOPIC ID STRING_LITERAL definedType)
     ;
 
 /**

@@ -75,6 +75,7 @@ commandDeclaration
     :   constDeclaration |
         subtypeDeclaration |
         structureDeclaration |
+        topicDeclaration |
         choiceDeclaration |
         unionDeclaration |
         enumDeclaration |
@@ -113,6 +114,15 @@ subtypeDeclaration
                                         currentPackage.setLocalType((BaseTokenAST)i, subtype);
                                     }
         )
+    ;
+
+topicDeclaration
+    : #(t:TOPIC i:ID a:STRING_LITERAL b:definedType
+          {
+              pkg.setType((BaseTokenAST)i, t);
+              scope.setSymbol((BaseTokenAST)i, t);
+          }
+      )
     ;
 
 /**

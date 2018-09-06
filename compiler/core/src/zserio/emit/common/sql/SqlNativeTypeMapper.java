@@ -11,6 +11,7 @@ import zserio.ast.EnumType;
 import zserio.ast.FloatType;
 import zserio.ast.FunctionType;
 import zserio.ast.ServiceType;
+import zserio.ast.TopicType;
 import zserio.ast.StructureType;
 import zserio.ast.SignedBitFieldType;
 import zserio.ast.SqlDatabaseType;
@@ -115,6 +116,12 @@ public class SqlNativeTypeMapper
         public void visitServiceType(ServiceType type)
         {
             // not supported
+        }
+
+        @Override
+        public void visitTopicType(TopicType type)
+        {
+            sqlType = blobType;
         }
 
         @Override

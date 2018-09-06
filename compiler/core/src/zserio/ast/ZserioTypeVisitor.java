@@ -67,6 +67,13 @@ public interface ZserioTypeVisitor
     void visitServiceType(ServiceType type);
 
     /**
+     * Visitor called from TopicType class.
+     *
+     * @param type TopicType instance which calls this visitor.
+     */
+    void visitTopicType(TopicType type);
+
+    /**
      * Visitor called from SignedBitFieldType class.
      *
      * @param type SignedBitFieldType instance which calls this visitor.
