@@ -116,6 +116,20 @@ set(ZSERIO_CPP_RUNTIME_LIB_SRCS
     zserio/VarUInt64Util.h
 )
 
+if (ZSERIO_RUNTIME_INCLUDE_PUBSUB)
+    set(ZSERIO_CPP_RUNTIME_LIB_SRCS
+	${ZSERIO_CPP_RUNTIME_LIB_SRCS}
+        zserio/Publisher.cpp
+        zserio/Publisher.h
+        zserio/PubSubSystem.cpp
+        zserio/PubSubSystem.h
+        zserio/Subscriber.cpp
+        zserio/Subscriber.h
+        zserio/Topic.cpp
+        zserio/Topic.h
+    )
+endif ()
+
 if (ZSERIO_RUNTIME_INCLUDE_INSPECTOR)
     set(ZSERIO_CPP_RUNTIME_LIB_SRCS
         ${ZSERIO_CPP_RUNTIME_LIB_SRCS}
@@ -151,6 +165,10 @@ endif ()
 add_library(ZserioCppRuntime STATIC ${ZSERIO_CPP_RUNTIME_LIB_SRCS})
 
 target_include_directories(ZserioCppRuntime PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+if (ZSERIO_RUNTIME_INCLUDE_PUBSUB)
+    target_link_libraries(ZserioCppRuntime PUBLIC mosquitto)
+endif ()
 
 if (ZSERIO_RUNTIME_INCLUDE_RELATIONAL)
     target_link_libraries(ZserioCppRuntime PUBLIC ${ZSERIO_RUNTIME_SQLITE_LIBRARY})

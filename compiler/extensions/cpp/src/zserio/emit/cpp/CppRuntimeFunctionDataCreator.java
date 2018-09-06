@@ -12,6 +12,7 @@ import zserio.ast.EnumType;
 import zserio.ast.FloatType;
 import zserio.ast.FunctionType;
 import zserio.ast.ServiceType;
+import zserio.ast.TopicType;
 import zserio.ast.RpcType;
 import zserio.ast.StructureType;
 import zserio.ast.SignedBitFieldType;
@@ -140,6 +141,12 @@ public class CppRuntimeFunctionDataCreator
 
         @Override
         public void visitServiceType(ServiceType type)
+        {
+            // do nothing
+        }
+
+        @Override
+        public void visitTopicType(TopicType type)
         {
             // do nothing
         }

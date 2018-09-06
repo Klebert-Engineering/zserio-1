@@ -66,4 +66,7 @@ public interface Emitter
 
     public void beginRpc(AST r);
     public void endRpc(AST r);
+
+    public void beginTopic(AST t);
+    public void endTopic(AST t);
 }

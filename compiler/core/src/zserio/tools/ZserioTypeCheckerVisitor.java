@@ -27,6 +27,7 @@ import zserio.ast.StdIntegerType;
 import zserio.ast.StringType;
 import zserio.ast.Subtype;
 import zserio.ast.TokenAST;
+import zserio.ast.TopicType;
 import zserio.ast.TypeInstantiation;
 import zserio.ast.TypeReference;
 import zserio.ast.UnsignedBitFieldType;
@@ -117,6 +118,13 @@ public class ZserioTypeCheckerVisitor implements ZserioTypeVisitor
     /** {@inheritDoc} */
     @Override
     public void visitServiceType(ServiceType type)
+    {
+        visitCompoundType(type);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void visitTopicType(TopicType type)
     {
         visitCompoundType(type);
     }

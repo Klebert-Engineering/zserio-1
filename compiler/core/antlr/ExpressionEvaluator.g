@@ -52,6 +52,7 @@ commandDeclaration
     :   constDeclaration |
         subtypeDeclaration |
         serviceDeclaration |
+        topicDeclaration |
         structureDeclaration |
         choiceDeclaration |
         unionDeclaration |
@@ -80,6 +81,10 @@ serviceDeclaration
 
 rpcDeclaration
     :   #(RPC ID definedType definedType)
+    ;
+
+topicDeclaration
+    :   #(TOPIC ID STRING_LITERAL definedType)
     ;
 
 /**

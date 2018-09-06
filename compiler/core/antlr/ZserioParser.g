@@ -104,6 +104,7 @@ tokens
     SUBTYPE="subtype"<AST=zserio.ast.Subtype>;
     SUM="sum"<AST=zserio.ast.Expression>;
     TILDE<AST=zserio.ast.Expression>;
+    TOPIC="topic"<AST=zserio.ast.TopicType>;
     TRANSLATION_UNIT;
     TYPEREF<AST=zserio.ast.TypeReference>;
     UINT16="uint16"<AST=zserio.ast.StdIntegerType>;
@@ -148,6 +149,7 @@ commandDeclaration
     :   constDeclaration SEMICOLON! |
         subtypeDeclaration SEMICOLON! |
         serviceDeclaration SEMICOLON! |
+        topicDeclaration SEMICOLON! |
         structureDeclaration SEMICOLON! |
         choiceDeclaration SEMICOLON! |
         unionDeclaration SEMICOLON! |
@@ -181,6 +183,15 @@ rpcDeclaration
     :   RPC^ ID
         LPAREN!
         definedType
+        COMMA!
+        definedType
+        RPAREN!
+    ;
+
+topicDeclaration
+    :   TOPIC^ ID
+        LPAREN!
+        STRING_LITERAL
         COMMA!
         definedType
         RPAREN!

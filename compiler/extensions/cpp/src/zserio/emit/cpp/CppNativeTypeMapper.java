@@ -21,6 +21,7 @@ import zserio.ast.FunctionType;
 import zserio.ast.IntegerType;
 import zserio.ast.RpcType;
 import zserio.ast.ServiceType;
+import zserio.ast.TopicType;
 import zserio.ast.StructureType;
 import zserio.ast.SignedBitFieldType;
 import zserio.ast.SqlDatabaseType;
@@ -78,6 +79,8 @@ public class CppNativeTypeMapper
     {
         // don't resolve subtypes so that the subtype name (C++ typedef) will be used
         type = TypeReference.resolveType(type);
+	if (type == null)
+		System.out.println("Ohhohhh");
 
         final ZserioTypeMapperVisitor visitor = new ZserioTypeMapperVisitor();
         type.callVisitor(visitor);
@@ -278,6 +281,12 @@ public class CppNativeTypeMapper
 
         @Override
         public void visitServiceType(ServiceType type)
+        {
+            mapObjectArray();
+        }
+
+        @Override
+        public void visitTopicType(TopicType type)
         {
             mapObjectArray();
         }
@@ -526,6 +535,12 @@ public class CppNativeTypeMapper
 
         @Override
         public void visitServiceType(ServiceType type)
+        {
+            mapCompoundType(type);
+        }
+
+        @Override
+        public void visitTopicType(TopicType type)
         {
             mapCompoundType(type);
         }

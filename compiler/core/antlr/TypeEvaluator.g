@@ -90,6 +90,7 @@ commandDeclaration
         subtypeDeclaration |
         serviceDeclaration |
         structureDeclaration |
+        topicDeclaration |
         choiceDeclaration |
         unionDeclaration |
         enumDeclaration |
@@ -135,6 +136,15 @@ rpcDeclaration
           {
               pkg.setType((BaseTokenAST)i, r);
               scope.setSymbol((BaseTokenAST)i, r);
+          }
+      )
+    ;
+
+topicDeclaration
+    : #(t:TOPIC i:ID a:STRING_LITERAL b:definedType
+          {
+              pkg.setType((BaseTokenAST)i, t);
+              scope.setSymbol((BaseTokenAST)i, t);
           }
       )
     ;

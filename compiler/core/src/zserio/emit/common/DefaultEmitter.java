@@ -100,5 +100,10 @@ public abstract class DefaultEmitter implements Emitter
     @Override
     public void endRpc(AST r) {}
 
+    @Override
+    public void beginTopic(AST t) {}
+    @Override
+    public void endTopic(AST t) {}
+
     /**** end implementation of interface methods ****/
 }

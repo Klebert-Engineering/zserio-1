@@ -65,6 +65,7 @@ commandDeclaration
         subtypeDeclaration |
         serviceDeclaration |
         structureDeclaration |
+        topicDeclaration |
         choiceDeclaration |
         unionDeclaration |
         enumDeclaration |
@@ -106,6 +107,14 @@ rpcDeclaration
         definedType
         definedType
         ) { em.endRpc(r); }
+    ;
+
+topicDeclaration
+    :   #(t: TOPIC                  { em.beginTopic(t); }
+            ID
+            STRING_LITERAL
+            definedType
+        )                           { em.endTopic(t); }
     ;
 
 /**
