@@ -61,6 +61,18 @@ public class TopicType extends CompoundType
         setDocComment(getHiddenDocComment());
     }
 
+    public String getTopicName()
+    {
+        return topicName;
+    }
+
+    public ZserioType getValueType()
+    {
+        return valueType;
+    }
+
     private String topicName;
     private ZserioType valueType;
+
+    private static final long serialVersionUID = 7339295016544090386L;
 }
