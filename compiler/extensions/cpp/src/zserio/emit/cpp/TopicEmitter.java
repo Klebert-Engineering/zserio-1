@@ -21,13 +21,13 @@ public class TopicEmitter extends CppDefaultEmitter
 
     public void endRoot() throws ZserioEmitCppException
     {
-//        final TemplateDataContext templateDataContext = getTemplateDataContext();
-//        final Object templateData = new TopicEmitterTemplateData(templateDataContext, serviceType);
-//        processSourceTemplate(TEMPLATE_SOURCE_NAME, templateData, serviceType);
-//        processHeaderTemplate(TEMPLATE_HEADER_NAME, templateData, serviceType);
+        final TemplateDataContext templateDataContext = getTemplateDataContext();
+        final Object templateData = new TopicEmitterTemplateData(templateDataContext, topicType);
+        processSourceTemplate(TEMPLATE_SOURCE_NAME, templateData, topicType);
+        processHeaderTemplate(TEMPLATE_HEADER_NAME, templateData, topicType);
     }
 
     private TopicType topicType;
-//    private static final String TEMPLATE_SOURCE_NAME = "Topic.cpp.ftl";
-//    private static final String TEMPLATE_HEADER_NAME = "Topic.h.ftl";
+    private static final String TEMPLATE_SOURCE_NAME = "Topic.cpp.ftl";
+    private static final String TEMPLATE_HEADER_NAME = "Topic.h.ftl";
 }

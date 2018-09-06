@@ -120,6 +120,8 @@ topicDeclaration
     : #(t:TOPIC i:ID a:STRING_LITERAL b:definedType
           {
               pkg.setType((BaseTokenAST)i, t);
+              beginScope((CompoundType)t);
+              ((CompoundType)t).setScope(scope, pkg);
               scope.setSymbol((BaseTokenAST)i, t);
           }
       )
