@@ -22,9 +22,12 @@ public class ServiceEmitter extends CppDefaultEmitter
     public void endRoot() throws ZserioEmitCppException
     {
         final TemplateDataContext templateDataContext = getTemplateDataContext();
-        final Object templateData = new ServiceEmitterTemplateData(templateDataContext, serviceType);
-        processSourceTemplate(TEMPLATE_SOURCE_NAME, templateData, serviceType);
-        processHeaderTemplate(TEMPLATE_HEADER_NAME, templateData, serviceType);
+	if (serviceType != null)
+	{
+	    final Object templateData = new ServiceEmitterTemplateData(templateDataContext, serviceType);
+            processSourceTemplate(TEMPLATE_SOURCE_NAME, templateData, serviceType);
+            processHeaderTemplate(TEMPLATE_HEADER_NAME, templateData, serviceType);
+	}
     }
 
     private ServiceType serviceType;
