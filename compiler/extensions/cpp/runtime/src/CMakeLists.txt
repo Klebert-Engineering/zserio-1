@@ -94,6 +94,11 @@ if (ZSERIO_RUNTIME_INCLUDE_RPC_CURL)
 endif ()
 
 if (ZSERIO_RUNTIME_INCLUDE_PUBSUB)
-    target_link_libraries(ZserioCppRuntime PUBLIC paho-mqtt)
+    set_target_properties (ZserioCppRuntime PROPERTIES
+        CXX_STANDARD 11
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS NO
+        )
+    target_link_libraries(ZserioCppRuntime PUBLIC paho-mqtt3a)
 endif ()
 
