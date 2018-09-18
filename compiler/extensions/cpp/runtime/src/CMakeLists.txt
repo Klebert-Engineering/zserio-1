@@ -94,6 +94,6 @@ if (ZSERIO_RUNTIME_INCLUDE_RPC_CURL)
 endif ()
 
 if (ZSERIO_RUNTIME_INCLUDE_PUBSUB)
-    target_link_libraries(ZserioCppRuntime PUBLIC mosquitto)
+    target_link_libraries(ZserioCppRuntime PUBLIC paho-mqtt)
 endif ()
 

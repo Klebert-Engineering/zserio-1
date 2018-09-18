@@ -1,71 +1,206 @@
-#include <mosquitto.h>
 #include "Subscriber.h"
 #include "CppRuntimeException.h"
 #include "StringConvertUtil.h"
 
+#include <MQTTAsync.h>
 #include <algorithm>
 #include <iostream>
+#include <sstream>
+#include <chrono>
+#include <thread>
+#include <future>
 
 namespace zserio
 {
 
+struct Subscriber::Impl
+{
+    Impl(PubSubSystem& system):
+        m_system(system),
+        m_client()
+    { }
+
+    static void onConnLost(void* context, char* cause)
+    {
+        auto& client = *static_cast<MQTTAsync*>(context);
+        MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
+        int rc;
+        conn_opts.keepAliveInterval = 20;
+        conn_opts.cleansession = 1;
+        if ((rc = MQTTAsync_connect(client, &conn_opts)) != MQTTASYNC_SUCCESS)
+        {
+            std::cerr << "Failed to start connect, return code: " <<  rc  <<
+                         " Details: " << cause << std::endl;
+        }
+    }
+
+    static int onMessageArrived(void* context, char* topicName, int topicLen, MQTTAsync_message* message)
+    {
+        auto sub = static_cast<Subscriber::Impl*>(context);
+        auto topic = std::string(topicName, topicLen);
+        sub->notifyTopics(topic, static_cast<uint8_t*>(message->payload), message->payloadlen);
+        MQTTAsync_freeMessage(&message);
+        MQTTAsync_free(topicName);
+        return 1;
+    }
+
+    static void onAsyncSuccess(void* context, MQTTAsync_successData* /*response*/)
+    {
+        auto& client = *static_cast<Subscriber::Impl*>(context);
+        client.m_async_res.set_value("");
+    }
+
+    static void onAsyncFailure(void* context, MQTTAsync_failureData* response)
+    {
+        auto& client = *static_cast<Subscriber::Impl*>(context);
+        std::ostringstream stream;
+        stream << (response->message ? response->message : "")
+               << "(" << response->code << ")";
+        client.m_async_res.set_value(stream.str());
+    }
+
+    ~Impl()
+    {
+        MQTTAsync_disconnectOptions disc_opts = MQTTAsync_disconnectOptions_initializer;
+        disc_opts.onSuccess = onAsyncSuccess;
+        disc_opts.onFailure = onAsyncFailure;
+
+        auto f = std::function<void()>( [this, &disc_opts](){
+            int rc;
+            if ((rc = MQTTAsync_disconnect(m_client, &disc_opts)) != MQTTASYNC_SUCCESS) {
+                std::ostringstream stream;
+                stream << "Failed to start disconnect, return code " << rc << std::endl;
+                throw CppRuntimeException(stream.str());
+
+            };
+        });
+        syncWithAsyncOp(f);
+
+        MQTTAsync_destroy(&m_client);
+    }
+
+    void subscribe(const Topic& topic)
+    {
+        if (std::find(m_topics.begin(), m_topics.end(), &topic)
+                == m_topics.end())
+        {
+            MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
+            opts.onSuccess = onAsyncSuccess;
+            opts.onFailure = onAsyncFailure;
+            opts.context = this;
+
+            auto f = std::function<void()>([this, &opts, &topic](){
+                int rc;
+                // TODO Use host config with quality of service level
+                if ((rc = MQTTAsync_subscribe(m_client, topic.topic().c_str(), 2, &opts)) != MQTTASYNC_SUCCESS)
+                {
+                    std::ostringstream stream;
+                    stream << "Failed to start subscribe, return code " << rc;
+                    throw CppRuntimeException(stream.str());
+                }
+            });
+            syncWithAsyncOp(f);
+            m_topics.push_back(&topic);
+        }
+    }
+
+    void unsubscribe(const Topic& topic)
+    {
+        auto it = std::find(m_topics.begin(), m_topics.end(), &topic);
+        if (it != m_topics.end())
+        {
+            MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
+            opts.onSuccess = onAsyncSuccess;
+            opts.onFailure = onAsyncFailure;
+            opts.context = this;
+
+            auto f = std::function<void()>([this, &opts, &topic](){
+                int rc;
+                if ((rc = MQTTAsync_unsubscribe(m_client, topic.topic().c_str(), &opts)))
+                {
+                    std::ostringstream stream;
+                    stream << "Failed to start unsubscribe, return code " << rc;
+                    throw CppRuntimeException(stream.str());
+                }
+            });
+            syncWithAsyncOp(f);
+            m_topics.remove(&topic);
+        }
+    }
+
+    void syncWithAsyncOp(std::function<void()>& asyncTrigger)
+    {
+        m_async_res = std::promise<std::string>();
+        auto future = m_async_res.get_future();
+
+        asyncTrigger();
+
+        future.wait();
+        if (!future.get().empty())
+            throw CppRuntimeException(future.get());
+    }
+
+    void connect(const PubSubSystem::HostInformation& host)
+    {
+        const std::string hostAddr = "tcp://" + host.hostname + ":" + std::to_string(host.port);
+        MQTTAsync_create(&m_client, hostAddr.c_str(), host.client_id.c_str(), MQTTCLIENT_PERSISTENCE_NONE, nullptr);
+        MQTTAsync_setCallbacks(m_client, this, onConnLost, onMessageArrived, nullptr);
+
+        MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
+        conn_opts.keepAliveInterval = 20;
+        conn_opts.cleansession = 1;
+        conn_opts.onSuccess = onAsyncSuccess;
+        conn_opts.onFailure = onAsyncFailure;
+        conn_opts.context = this;
+
+        auto f = std::function<void()>([this, &conn_opts](){
+            int rc;
+            if ((rc = MQTTAsync_connect(m_client, &conn_opts)) != MQTTASYNC_SUCCESS)
+            {
+                std::ostringstream stream;
+                stream << "Failed to start connect, return code " << rc;
+                throw CppRuntimeException(stream.str());
+            }
+        });
+        syncWithAsyncOp(f);
+    }
+
+    void notifyTopics(std::string& topic, const uint8_t* msgData, size_t msgSize)
+    {
+        for (auto& t: m_topics)
+        {
+            if (t->matches(topic))
+                t->onMessageAvailable(msgData, msgSize);
+        }
+    }
+
+private:
+    PubSubSystem& m_system;
+    std::promise<std::string> m_async_res;
+    MQTTAsync m_client;
+    std::list<const Topic*> m_topics;
+};
+
+
 Subscriber::Subscriber(PubSubSystem& system):
-   m_system(system),
-   m_mosq(NULL),
-   m_loop(0)
+    m_impl(new Subscriber::Impl(system))
 { }
+
+Subscriber::~Subscriber() = default;
 
 void Subscriber::connect(const PubSubSystem::HostInformation &host)
 {
-    m_mosq = mosquitto_new(NULL, host.clean_session, this);
-
-    if (mosquitto_connect(m_mosq, host.hostname.c_str(), host.port, host.keepalive))
-        throw CppRuntimeException("Subscriber: Could not connect to host");
-
-    mosquitto_message_callback_set(m_mosq, Subscriber::onMessage);
-    m_loop = mosquitto_loop_start(m_mosq);
-
-    if (m_loop != MOSQ_ERR_SUCCESS)
-        throw CppRuntimeException("Subscriber: Unable to start loop: " + convertToString(m_loop) + "\n");
+    m_impl->connect(host);
 };
 
 void Subscriber::subscribe(const Topic &topic)
 {
-    if (std::find(m_topics.begin(), m_topics.end(), &topic)
-            == m_topics.end())
-    {
-        int ret = mosquitto_subscribe(m_mosq, NULL, topic.topic().c_str(),2);
-        // TODO Define QoS enum and use it here
-        if (ret != MOSQ_ERR_SUCCESS)
-            throw CppRuntimeException("Subscription for topic failed.");
-        m_topics.push_back(&topic);
-    }
+    m_impl->subscribe(topic);
 }
 
 void Subscriber::unsubscribe(const Topic& topic)
 {
-    int ret = mosquitto_unsubscribe(m_mosq, NULL, topic.topic().c_str());
-    if (ret != MOSQ_ERR_SUCCESS)
-        throw CppRuntimeException("Unsubscription failed.");
-    m_topics.remove(&topic);
-}
-
-void Subscriber::onMessage(mosquitto * moq, void * subscriber, const mosquitto_message* msg)
-{
-   Subscriber* sub = reinterpret_cast<Subscriber*>(subscriber);
-   sub->notifyTopics(msg->topic, reinterpret_cast<uint8_t*>(msg->payload), msg->payloadlen);
-}
-
-void Subscriber::notifyTopics(const char *topic, const uint8_t *msgData, size_t msgSize)
-{
-    for (std::list<const Topic*>::iterator it = m_topics.begin();
-         it != m_topics.end(); ++it)
-    {
-        const Topic* t = *it;
-        std::string tAsStr(topic);
-        if (t->matches(tAsStr))
-            t->onMessageAvailable(msgData, msgSize);
-    }
+    m_impl->unsubscribe(topic);
 }
 
 }
