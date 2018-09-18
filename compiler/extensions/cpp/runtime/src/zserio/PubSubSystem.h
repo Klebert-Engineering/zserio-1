@@ -9,7 +9,7 @@ namespace zserio
 class PubSubSystem 
 {
 public:
-    typedef size_t SubscriptionId;
+    using SubscriptionId = size_t;
     PubSubSystem();
     ~PubSubSystem();
     
@@ -19,6 +19,7 @@ public:
         uint32_t	port;
         uint32_t	keepalive;
         bool		clean_session;
+        std::string client_id;
     };
 
 private:

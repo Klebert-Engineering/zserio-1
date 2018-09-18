@@ -5,6 +5,7 @@
 
 #include <string>
 #include <cstddef>
+#include <memory>
 
 namespace zserio
 {
@@ -13,14 +14,14 @@ class Publisher
 {
 public:
     Publisher(PubSubSystem& system);
+    ~Publisher();
 
     void connect(const PubSubSystem::HostInformation& host);
     void publish(const std::string &topic, const uint8_t* buffer, size_t size, int qos, bool retain);
 
 private:
-    PubSubSystem& m_system;
-    struct mosquitto* m_mosq;
-    int m_loop;
+    struct Impl;
+    std::unique_ptr<Impl> m_impl;
 };
 
 }
