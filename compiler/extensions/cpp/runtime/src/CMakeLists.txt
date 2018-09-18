@@ -167,6 +167,11 @@ add_library(ZserioCppRuntime STATIC ${ZSERIO_CPP_RUNTIME_LIB_SRCS})
 target_include_directories(ZserioCppRuntime PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 if (ZSERIO_RUNTIME_INCLUDE_PUBSUB)
+    set_target_properties (ZserioCppRuntime PROPERTIES
+        CXX_STANDARD 11
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS NO
+        )
     target_link_libraries(ZserioCppRuntime PUBLIC paho-mqtt)
 endif ()
 
