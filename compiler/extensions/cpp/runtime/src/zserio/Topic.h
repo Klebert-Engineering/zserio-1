@@ -1,5 +1,5 @@
 #ifndef ZSERIO_TOPIC_H_INC
-#define  ZSERIO_TOPIC_H_INC 
+#define ZSERIO_TOPIC_H_INC
 
 #include "Publisher.h"
 #include "CppRuntimeException.h"
@@ -11,6 +11,7 @@
 
 namespace zserio 
 {
+class Subscriber;
 class Topic 
 {
 public:
@@ -30,6 +31,9 @@ public:
 
     /** Gets called when message with compatible topic has arrived */
     virtual void onMessageAvailable(const uint8_t* msgData, size_t size) const = 0;
+
+    /** Activate subscription for this topic at the provided Subscriber */
+    PubSubSystem::SubscriptionId subscribe(Subscriber& sub);
 
 protected:
     template<class T>
@@ -58,8 +62,12 @@ protected:
     bool checkIfAllBound() const;
 
 protected:
-    const std::vector<std::string> topic_;
     std::vector<std::string> wildcards_ = {{""}};
+
+private:
+    PubSubSystem::SubscriptionId nextId_ = 0;
+    const std::vector<std::string> topic_;
 };
+
 }
 #endif

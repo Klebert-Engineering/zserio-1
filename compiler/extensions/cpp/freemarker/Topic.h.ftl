@@ -44,8 +44,6 @@ private:
     void notifySubscribers(${valueTypeName} &&pl) const;
 
 private:
-    // TODO As soon as zserio runtime allows C++11 subscription functionality could also migrated
-    zserio::PubSubSystem::SubscriptionId nextId_ = 0;
     std::map<zserio::PubSubSystem::SubscriptionId, OnPayloadAvailable> subscribers_;
 };
 

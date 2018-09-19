@@ -33,9 +33,9 @@ zserio::PubSubSystem::SubscriptionId ${name}::subscribe(
         ::zserio::Subscriber &sub,
         const ${name}::OnPayloadAvailable& lambda)
 {
-    sub.subscribe(*this);
-    subscribers_[nextId_] = lambda;
-    return nextId_++;
+    auto id = Topic::subscribe(sub);
+    subscribers_[id] = lambda;
+    return id;
 }
 
 void ${name}::unsubscribe(
@@ -50,15 +50,11 @@ void ${name}::unsubscribe(
     }
 }
 
-void ${name}::notifySubscribers(${valueTypeName} &&pl) const
-{
-    for (auto& sub: subscribers_)
-        sub.second(pl);
-}
-
 void ${name}::onMessageAvailable(const uint8_t * msgData, size_t  size) const
 {
-    notifySubscribers(dataToSzerio<${valueTypeName}>(msgData, size));
+    auto pl = dataToSzerio<${valueTypeName}>(msgData, size);
+    for (auto& sub: subscribers_)
+        sub.second(pl);
 }
 
 <@namespace_end package.path/>
