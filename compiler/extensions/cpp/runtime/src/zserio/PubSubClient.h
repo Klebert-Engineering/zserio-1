@@ -17,6 +17,8 @@ public:
     using SubscriptionId = size_t;
 
     PubSubClient();
+
+    /** Clean-up and disconnect on demand.*/
     virtual ~PubSubClient();
 
     PubSubClient(const PubSubClient& pubSub) = delete;
@@ -35,6 +37,9 @@ public:
 
     /** Tries to connect ot the specified host. */
     void connect(const PubSubClient::HostInformation& host);
+
+    /** Disconnects from host, if connected otherwise does nothing. */
+    void disconnect();
 
     /** Publishes data using the specified topic */
     void publish(const std::string &topic, const uint8_t* buffer, size_t size, int qos, bool retain);

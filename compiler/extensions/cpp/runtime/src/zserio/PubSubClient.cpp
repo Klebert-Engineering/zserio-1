@@ -19,23 +19,17 @@ struct PubSubClient::Impl
 
     ~Impl()
     {
-        MQTTAsync_disconnectOptions disc_opts = MQTTAsync_disconnectOptions_initializer;
-        disc_opts.onSuccess = onAsyncSuccess;
-        disc_opts.onFailure = onAsyncFailure;
-        disc_opts.context = this;
-
-        auto f = std::function<void()>( [this, &disc_opts](){
-            int rc;
-            if ((rc = MQTTAsync_disconnect(m_client, &disc_opts)) != MQTTASYNC_SUCCESS) {
-                std::ostringstream stream;
-                stream << "Failed to start disconnect, return code " << rc << std::endl;
-                throw CppRuntimeException(stream.str());
-
-            };
-        });
-        syncWithAsyncOp(f);
-
-        MQTTAsync_destroy(&m_client);
+        // Avoid throwing exception from within dtor by catch
+        try {
+            disconnect();
+        } catch (CppRuntimeException& ex) {
+            std::cerr << "Critical error while trying to disconnect: "
+                      << ex.what()
+                      << std::endl;
+            // Free up memory to avoid leak on exception
+            MQTTAsync_destroy(&m_client);
+            m_client = nullptr;
+        }
     }
 
     static void onConnLost(void* context, char* cause)
@@ -81,6 +75,9 @@ struct PubSubClient::Impl
 
     void connect(const PubSubClient::HostInformation& host)
     {
+        if (m_client)
+            throw CppRuntimeException("Client is already connected.");
+
         const std::string hostAddr = "tcp://" + host.hostname + ":" + std::to_string(host.port);
         std::cout << hostAddr <<  " " << host.client_id << std::endl;
         MQTTAsync_create(&m_client, hostAddr.c_str(), host.client_id.c_str(), MQTTCLIENT_PERSISTENCE_NONE, nullptr);
@@ -104,6 +101,30 @@ struct PubSubClient::Impl
             }
         });
         syncWithAsyncOp(f);
+    }
+
+    void disconnect()
+    {
+        if (!m_client) return;
+
+        MQTTAsync_disconnectOptions disc_opts = MQTTAsync_disconnectOptions_initializer;
+        disc_opts.onSuccess = onAsyncSuccess;
+        disc_opts.onFailure = onAsyncFailure;
+        disc_opts.context = this;
+
+        auto f = std::function<void()>( [this, &disc_opts](){
+            int rc;
+            if ((rc = MQTTAsync_disconnect(m_client, &disc_opts)) != MQTTASYNC_SUCCESS) {
+                std::ostringstream stream;
+                stream << "Failed to start disconnect, return code " << rc << std::endl;
+                throw CppRuntimeException(stream.str());
+
+            };
+        });
+        syncWithAsyncOp(f);
+
+        MQTTAsync_destroy(&m_client);
+        m_client = nullptr;
     }
 
     void publish(const std::string &topic,
@@ -218,6 +239,11 @@ PubSubClient::~PubSubClient() = default;
 void PubSubClient::connect(const PubSubClient::HostInformation &host)
 {
     m_impl->connect(host);
+}
+
+void PubSubClient::disconnect()
+{
+   m_impl->disconnect();
 };
 
 void PubSubClient::subscribe(const Topic &topic)
