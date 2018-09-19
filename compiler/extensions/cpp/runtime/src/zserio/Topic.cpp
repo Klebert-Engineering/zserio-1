@@ -1,4 +1,5 @@
 #include "Topic.h"
+#include "Subscriber.h"
 #include <sstream>
 
 namespace zserio
@@ -43,6 +44,12 @@ std::string Topic::unboundTopic() const
         topic += el;
    }
    return topic;
+}
+
+PubSubSystem::SubscriptionId Topic::subscribe(Subscriber &sub)
+{
+    sub.subscribe(*this);
+    return nextId_++;
 }
 
 bool Topic::matches(std::string &topic) const
