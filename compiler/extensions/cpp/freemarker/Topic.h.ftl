@@ -4,7 +4,7 @@
 <@include_guard_begin package.path, name/>
 
 #include <zserio/Topic.h>
-#include <zserio/PubSubSystem.h>
+#include <zserio/PubSubClient.h>
 
 #include <functional>
 #include <string>
@@ -16,8 +16,7 @@
 
 namespace zserio
 {
-class Publisher;
-class Subscriber;
+class PubSubClient;
 }
 
 <@namespace_begin package.path/>
@@ -31,21 +30,18 @@ public:
     ${name}(const std::array<std::string, ${numWildcards}>& wildcards);
 
     /** Publishes Payload pl using the provided Publisher pub */
-    void publish(zserio::Publisher& pub, ${valueTypeName} &pl, int qualityOfService, bool retain) const;
+    void publish(zserio::PubSubClient& pub, ${valueTypeName} &pl, int qualityOfService, bool retain) const;
 
     /** Subscribe to this topic get notifications if payload is available */
     using OnPayloadAvailable = std::function<void(const ${valueTypeName}& pl)>;
-    zserio::PubSubSystem::SubscriptionId subscribe(zserio::Subscriber& sub, const OnPayloadAvailable& callback);
-    void unsubscribe(zserio::Subscriber& sub, zserio::PubSubSystem::SubscriptionId id);
+    zserio::PubSubClient::SubscriptionId subscribe(zserio::PubSubClient& sub, const OnPayloadAvailable& callback);
+    void unsubscribe(zserio::PubSubClient& sub, zserio::PubSubClient::SubscriptionId id);
 
     /** Gets invoked when message with compatible topic is available */
     void onMessageAvailable(const uint8_t *msgData, size_t size) const override;
 
 private:
-    void notifySubscribers(${valueTypeName} &&pl) const;
-
-private:
-    std::map<zserio::PubSubSystem::SubscriptionId, OnPayloadAvailable> subscribers_;
+    std::map<zserio::PubSubClient::SubscriptionId, OnPayloadAvailable> subscribers_;
 };
 
 <@namespace_end package.path/>
