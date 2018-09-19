@@ -1,7 +1,7 @@
 #ifndef ZSERIO_TOPIC_H_INC
 #define ZSERIO_TOPIC_H_INC
 
-#include "Publisher.h"
+#include "PubSubClient.h"
 #include "CppRuntimeException.h"
 #include "BitStreamWriter.h"
 #include "BitStreamReader.h"
@@ -11,7 +11,6 @@
 
 namespace zserio 
 {
-class Subscriber;
 class Topic 
 {
 public:
@@ -32,12 +31,12 @@ public:
     /** Gets called when message with compatible topic has arrived */
     virtual void onMessageAvailable(const uint8_t* msgData, size_t size) const = 0;
 
-    /** Activate subscription for this topic at the provided Subscriber */
-    PubSubSystem::SubscriptionId subscribe(Subscriber& sub);
+    /** Activate subscription for this topic at the provided PubSubClient */
+    PubSubClient::SubscriptionId subscribe(PubSubClient& sub);
 
 protected:
     template<class T>
-    void publish(zserio::Publisher &pub, T &pl, int qualityOfService = 2, bool retain = false) const
+    void publish(zserio::PubSubClient &pub, T &pl, int qualityOfService = 2, bool retain = false) const
     {
         if (!checkIfAllBound())
             throw zserio::CppRuntimeException("Tried to publish a message with topic that contains wildcards.");
@@ -65,7 +64,7 @@ protected:
     std::vector<std::string> wildcards_ = {{""}};
 
 private:
-    PubSubSystem::SubscriptionId nextId_ = 0;
+    PubSubClient::SubscriptionId nextId_ = 0;
     const std::vector<std::string> topic_;
 };
 

@@ -3,8 +3,7 @@
 
 #include "<@include_path package.path, "${name}.h"/>"
 
-#include <zserio/Publisher.h>
-#include <zserio/Subscriber.h>
+#include <zserio/PubSubClient.h>
 
 <@user_includes cppUserIncludes, false/>
 
@@ -21,7 +20,7 @@ ${name}::${name}(const std::array<std::string, ${numWildcards}> &wildcards)
     wildcards_ = std::vector<std::string>(wildcards.begin(), wildcards.end());
 }
 
-void ${name}::publish(::zserio::Publisher &pub,
+void ${name}::publish(::zserio::PubSubClient &pub,
         ${valueTypeName} &pl,
         int qualityOfService = 2,
         bool retain = false) const
@@ -29,8 +28,8 @@ void ${name}::publish(::zserio::Publisher &pub,
     Topic::publish(pub, pl, qualityOfService, retain);
 }
 
-zserio::PubSubSystem::SubscriptionId ${name}::subscribe(
-        ::zserio::Subscriber &sub,
+zserio::PubSubClient::SubscriptionId ${name}::subscribe(
+        ::zserio::PubSubClient &sub,
         const ${name}::OnPayloadAvailable& lambda)
 {
     auto id = Topic::subscribe(sub);
@@ -39,8 +38,8 @@ zserio::PubSubSystem::SubscriptionId ${name}::subscribe(
 }
 
 void ${name}::unsubscribe(
-        zserio::Subscriber &sub,
-        zserio::PubSubSystem::SubscriptionId id)
+        zserio::PubSubClient &sub,
+        zserio::PubSubClient::SubscriptionId id)
 {
     auto it = subscribers_.find(id);
     if (it != subscribers_.end()) {
