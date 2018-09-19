@@ -119,12 +119,8 @@ set(ZSERIO_CPP_RUNTIME_LIB_SRCS
 if (ZSERIO_RUNTIME_INCLUDE_PUBSUB)
     set(ZSERIO_CPP_RUNTIME_LIB_SRCS
 	${ZSERIO_CPP_RUNTIME_LIB_SRCS}
-        zserio/Publisher.cpp
-        zserio/Publisher.h
-        zserio/PubSubSystem.cpp
-        zserio/PubSubSystem.h
-        zserio/Subscriber.cpp
-        zserio/Subscriber.h
+        zserio/PubSubClient.cpp
+        zserio/PubSubClient.h
         zserio/Topic.cpp
         zserio/Topic.h
     )
