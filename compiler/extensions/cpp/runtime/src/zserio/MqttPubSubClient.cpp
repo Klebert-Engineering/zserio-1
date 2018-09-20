@@ -1,5 +1,5 @@
-#include "PubSubClient.h"
 #include <MQTTAsync.h>
+#include "MqttPubSubClient.h"
 #include "CppRuntimeException.h"
 #include "StringConvertUtil.h"
 #include "Topic.h"
@@ -9,13 +9,20 @@
 #include <future>
 #include <sstream>
 #include <list>
+#include <algorithm>
 
 namespace zserio
 {
 
-struct PubSubClient::Impl
+struct MqttPubSubClient::Impl
 {
-    Impl() = default;
+    Impl(MqttPubSubClient::HostInformation host): m_host(std::move(host))
+    {  }
+
+    Impl(Impl&&) = delete;
+    Impl(const Impl&) = delete;
+    Impl& operator=(const Impl&) = delete;
+    Impl& operator=(Impl&&) = delete;
 
     ~Impl()
     {
@@ -48,13 +55,13 @@ struct PubSubClient::Impl
 
     static void onAsyncSuccess(void* context, MQTTAsync_successData* /*response*/)
     {
-        auto& client = *static_cast<PubSubClient::Impl*>(context);
+        auto& client = *static_cast<MqttPubSubClient::Impl*>(context);
         client.m_async_res.set_value("");
     }
 
     static void onAsyncFailure(void* context, MQTTAsync_failureData* response)
     {
-        auto& client = *static_cast<PubSubClient::Impl*>(context);
+        auto& client = *static_cast<MqttPubSubClient::Impl*>(context);
         std::ostringstream stream;
         stream << (response->message ? response->message : "")
                << "(" << response->code << ")";
@@ -73,15 +80,13 @@ struct PubSubClient::Impl
             throw CppRuntimeException(future.get());
     }
 
-    void connect(const PubSubClient::HostInformation& host)
+    void connect()
     {
         if (m_client)
             throw CppRuntimeException("Client is already connected.");
 
-        const std::string hostAddr = "tcp://" + host.hostname + ":" + std::to_string(host.port);
-        std::cout << hostAddr <<  " " << host.client_id << std::endl;
-        MQTTAsync_create(&m_client, hostAddr.c_str(), host.client_id.c_str(), MQTTCLIENT_PERSISTENCE_NONE, nullptr);
-        std::cout << "Creation successful" << std::endl;
+        const std::string hostAddr = "tcp://" + m_host.hostname + ":" + std::to_string(m_host.port);
+        MQTTAsync_create(&m_client, hostAddr.c_str(), m_host.client_id.c_str(), MQTTCLIENT_PERSISTENCE_NONE, nullptr);
         MQTTAsync_setCallbacks(m_client, this, onConnLost, onMessageArrived, nullptr);
 
         MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
@@ -157,7 +162,7 @@ struct PubSubClient::Impl
 
     static int onMessageArrived(void* context, char* topicName, int topicLen, MQTTAsync_message* message)
     {
-        auto sub = static_cast<PubSubClient::Impl*>(context);
+        auto sub = static_cast<MqttPubSubClient::Impl*>(context);
         auto topic = std::string(topicName, topicLen);
         sub->notifyTopics(topic, static_cast<uint8_t*>(message->payload), message->payloadlen);
         MQTTAsync_freeMessage(&message);
@@ -224,39 +229,40 @@ struct PubSubClient::Impl
     }
 
 private:
+    MqttPubSubClient::HostInformation m_host;
     std::promise<std::string> m_async_res;
     MQTTAsync m_client = nullptr;
     std::list<const Topic*> m_topics;
 };
 
-PubSubClient::PubSubClient():
-    m_impl(new PubSubClient::Impl())
+MqttPubSubClient::MqttPubSubClient(const MqttPubSubClient::HostInformation &host):
+    m_impl(new MqttPubSubClient::Impl(host))
 { }
 
-PubSubClient::~PubSubClient() = default;
+MqttPubSubClient::~MqttPubSubClient() = default;
 
 
-void PubSubClient::connect(const PubSubClient::HostInformation &host)
+void MqttPubSubClient::connect()
 {
-    m_impl->connect(host);
+    m_impl->connect();
 }
 
-void PubSubClient::disconnect()
+void MqttPubSubClient::disconnect()
 {
    m_impl->disconnect();
 };
 
-void PubSubClient::subscribe(const Topic &topic)
+void MqttPubSubClient::subscribe(const Topic &topic)
 {
     m_impl->subscribe(topic);
 }
 
-void PubSubClient::unsubscribe(const Topic& topic)
+void MqttPubSubClient::unsubscribe(const Topic& topic)
 {
     m_impl->unsubscribe(topic);
 }
 
-void PubSubClient::publish(const std::string &topic, const uint8_t* buffer, size_t size, int qos = 0, bool retain = false)
+void MqttPubSubClient::publish(const std::string &topic, const uint8_t* buffer, size_t size, int qos = 0, bool retain = false)
 {
     m_impl->publish(topic, buffer, size, qos, retain);
 };

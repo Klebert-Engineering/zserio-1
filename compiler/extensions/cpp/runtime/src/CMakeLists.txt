@@ -66,8 +66,9 @@ endif ()
 if (ZSERIO_RUNTIME_INCLUDE_PUBSUB)
     set(ZSERIO_CPP_RUNTIME_LIB_SRCS
 	${ZSERIO_CPP_RUNTIME_LIB_SRCS}
-        zserio/PubSubClient.cpp
         zserio/PubSubClient.h
+        zserio/MqttPubSubClient.cpp
+        zserio/MqttPubSubClient.h
         zserio/Topic.cpp
         zserio/Topic.h
     )
