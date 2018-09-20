@@ -169,7 +169,7 @@ if (ZSERIO_RUNTIME_INCLUDE_PUBSUB)
         CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS NO
         )
-    target_link_libraries(ZserioCppRuntime PUBLIC paho-mqtt)
+    target_link_libraries(ZserioCppRuntime PUBLIC paho-mqtt3a)
 endif ()
 
 if (ZSERIO_RUNTIME_INCLUDE_RELATIONAL)
