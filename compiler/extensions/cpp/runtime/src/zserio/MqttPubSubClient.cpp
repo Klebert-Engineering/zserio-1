@@ -9,6 +9,7 @@
 #include <future>
 #include <sstream>
 #include <list>
+#include <algorithm>
 
 namespace zserio
 {
