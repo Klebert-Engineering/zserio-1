@@ -122,6 +122,8 @@ if (ZSERIO_RUNTIME_INCLUDE_PUBSUB)
         zserio/PubSubClient.h
         zserio/MqttPubSubClient.cpp
         zserio/MqttPubSubClient.h
+	zserio/RosPubSubClient.cpp
+	zserio/RosPubSubClient.h
         zserio/Topic.cpp
         zserio/Topic.h
     )
@@ -170,6 +172,9 @@ if (ZSERIO_RUNTIME_INCLUDE_PUBSUB)
         CXX_EXTENSIONS NO
         )
     target_link_libraries(ZserioCppRuntime PUBLIC paho-mqtt3a)
+
+    find_package (catkin COMPONENTS roscpp REQUIRED)
+    target_link_libraries(ZserioCppRuntime PUBLIC ${catkin_LIBRARIES})
 endif ()
 
 if (ZSERIO_RUNTIME_INCLUDE_RELATIONAL)
