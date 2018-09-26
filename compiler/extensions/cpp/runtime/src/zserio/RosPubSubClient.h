@@ -19,7 +19,8 @@ public:
     struct HostInformation
     {
         std::string client_id;
-	std::string nodeName;
+        std::string nodeName;
+        std::string nodeSubname;
     };
 
     RosPubSubClient(const RosPubSubClient::HostInformation& host);

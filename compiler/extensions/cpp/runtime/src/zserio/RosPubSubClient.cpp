@@ -4,82 +4,31 @@
 #include "Topic.h"
 #include "ZserioWrapper.h"
 
-#include "ros/ros.h"
+#include <ros/ros.h>
+#include <std_msgs/String.h>
 
 #include <functional>
-#include <iostream>
 #include <future>
 #include <sstream>
 #include <list>
 #include <algorithm>
+#include <map>
 
 namespace zserio
 {
 
 struct RosPubSubClient::Impl
 {
-    Impl(RosPubSubClient::HostInformation host) //: m_host(std::move(host))
-        : m_nodeHandle(nullptr)
+    Impl(RosPubSubClient::HostInformation host): m_hostCfg(host)
     {
-	int numArgs = 0;
-        ros::init(numArgs, NULL, host.nodeName);
+        int numArgs = 0;
+        if (!ros::Time::isValid()){
+            ros::init(numArgs, nullptr, m_hostCfg.nodeName);
+        }
     }
 
     ~Impl()
-    {
-//        // Avoid throwing exception from within dtor by catch
-//        try {
-//            disconnect();
-//        } catch (CppRuntimeException& ex) {
-//            std::cerr << "Critical error while trying to disconnect: "
-//                      << ex.what()
-//                      << std::endl;
-//            // Free up memory to avoid leak on exception
-//            MQTTAsync_destroy(&m_client);
-//            m_client = nullptr;
-//        }
-    }
-
-//    static void onConnLost(void* context, char* cause)
-//    {
-//        auto& client = *static_cast<MQTTAsync*>(context);
-//        MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
-//        int rc;
-//        conn_opts.keepAliveInterval = 20;
-//        conn_opts.cleansession = 1;
-//        if ((rc = MQTTAsync_connect(client, &conn_opts)) != MQTTASYNC_SUCCESS)
-//        {
-//            std::cerr << "Failed to start connect, return code: " <<  rc  <<
-//                         " Details: " << cause << std::endl;
-//        }
-//    }
-//
-//    static void onAsyncSuccess(void* context, MQTTAsync_successData* /*response*/)
-//    {
-//        auto& client = *static_cast<MqttPubSubClient::Impl*>(context);
-//        client.m_async_res.set_value("");
-//    }
-//
-//    static void onAsyncFailure(void* context, MQTTAsync_failureData* response)
-//    {
-//        auto& client = *static_cast<MqttPubSubClient::Impl*>(context);
-//        std::ostringstream stream;
-//        stream << (response->message ? response->message : "")
-//               << "(" << response->code << ")";
-//        client.m_async_res.set_value(stream.str());
-//    }
-//
-//    void syncWithAsyncOp(std::function<void()>& asyncTrigger)
-//    {
-//        m_async_res = std::promise<std::string>();
-//        auto future = m_async_res.get_future();
-//
-//        asyncTrigger();
-//
-//        future.wait();
-//        if (!future.get().empty())
-//            throw CppRuntimeException(future.get());
-//    }
+    { }
 
     void publish(const std::string &topic,
                  const uint8_t* buffer,
@@ -87,87 +36,90 @@ struct RosPubSubClient::Impl
                  int qos = 0,
                  bool retain = false)
     {
-	ros_zserio_test::ZserioWrapper msg;
-	msg.zserio_bytes = std::vector<uint8_t>(buffer, buffer + size);
+        ros_zserio_test::ZserioWrapper msg;
+        msg.zserio_bytes = std::vector<uint8_t>(buffer, buffer + size);
 
-	// TODO: advertise only once
-        ros::Publisher pub =
-		m_nodeHandle->advertise<ros_zserio_test::ZserioWrapper>(topic, 1000);
-	pub.publish(msg);
+        if (m_pub.getTopic().empty()) {
+            m_pub = m_nodeHandle->advertise<ros_zserio_test::ZserioWrapper>(topic, 1000);
+        }
+
+        m_pub.publish(msg);
         ros::spinOnce();
-
     }
 
-//    static int onMessageArrived(void* context, char* topicName, int topicLen, MQTTAsync_message* message)
-//    {
-//        auto sub = static_cast<MqttPubSubClient::Impl*>(context);
-//        auto topic = std::string(topicName, topicLen);
-//        sub->notifyTopics(topic, static_cast<uint8_t*>(message->payload), message->payloadlen);
-//        MQTTAsync_freeMessage(&message);
-//        MQTTAsync_free(topicName);
-//        return 1;
-//    }
-//
-//    void subscribe(const Topic& topic)
-//    {
-//        if (std::find(m_topics.begin(), m_topics.end(), &topic)
-//                == m_topics.end())
-//        {
-//            MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
-//            opts.onSuccess = onAsyncSuccess;
-//            opts.onFailure = onAsyncFailure;
-//            opts.context = this;
-//
-//            auto f = std::function<void()>([this, &opts, &topic](){
-//                int rc;
-//                // TODO Use host config with quality of service level
-//                if ((rc = MQTTAsync_subscribe(m_client, topic.topic().c_str(), 2, &opts)) != MQTTASYNC_SUCCESS)
-//                {
-//                    std::ostringstream stream;
-//                    stream << "Failed to start subscribe, return code " << rc;
-//                    throw CppRuntimeException(stream.str());
-//                }
-//            });
-//            syncWithAsyncOp(f);
-//            m_topics.push_back(&topic);
-//        }
-//    }
-//
-//    void unsubscribe(const Topic& topic)
-//    {
-//        auto it = std::find(m_topics.begin(), m_topics.end(), &topic);
-//        if (it != m_topics.end())
-//        {
-//            MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
-//            opts.onSuccess = onAsyncSuccess;
-//            opts.onFailure = onAsyncFailure;
-//            opts.context = this;
-//
-//            auto f = std::function<void()>([this, &opts, &topic](){
-//                int rc;
-//                if ((rc = MQTTAsync_unsubscribe(m_client, topic.topic().c_str(), &opts)))
-//                {
-//                    std::ostringstream stream;
-//                    stream << "Failed to start unsubscribe, return code " << rc;
-//                    throw CppRuntimeException(stream.str());
-//                }
-//            });
-//            syncWithAsyncOp(f);
-//            m_topics.remove(&topic);
-//        }
-//    }
-//
-//    void notifyTopics(std::string& topic, const uint8_t* msgData, size_t msgSize)
-//    {
-//        for (auto& t: m_topics)
-//        {
-//            if (t->matches(topic))
-//                t->onMessageAvailable(msgData, msgSize);
-//        }
-//    }
+    void onRosMessageAvailable(const boost::shared_ptr<ros_zserio_test::ZserioWrapper const> msg,
+                               std::string topic)
+    {
+        auto rawData = static_cast<const uint8_t*>(&msg->zserio_bytes[0]); 
+        notifyTopics(topic, rawData, msg->zserio_bytes.size()); 
+    }
+
+    void subscribe(const Topic& topic)
+    {
+        const auto topicStr = topic.topic();
+        auto it = m_subscribers.find(topicStr);
+        if (it == m_subscribers.end())
+        {
+            auto callback = boost::bind(
+                        &RosPubSubClient::Impl::onRosMessageAvailable,
+                        this,
+                        _1,
+                        topicStr);
+
+            m_subscribers[topicStr] = m_nodeHandle->subscribe<ros_zserio_test::ZserioWrapper>(
+                    topic.topic(),
+                    100,
+                    callback
+                    );
+
+
+            if (!m_subscribers[topicStr]) throw CppRuntimeException("Unable to create subscriber.");
+
+            if (!m_future.valid())
+                m_future = std::async(std::launch::async, std::function<void()>([](){ ros::spin(); }));
+        }
+
+        if (m_subscribers.find(topicStr) != m_subscribers.end())
+        {
+            auto& topics = m_topics[topicStr];
+            if (std::find(topics.begin(), topics.end(), &topic) == topics.end()) {
+                topics.push_back(&topic);
+            }
+        }
+    }
+
+    void unsubscribe(const Topic& topic)
+    {
+        const auto topicStr = topic.topic();
+        if (m_subscribers.find(topicStr) != m_subscribers.end())
+        {
+            auto& topics = m_topics[topicStr];
+            std::remove(topics.begin(), topics.end(), &topic);
+            if (topics.size() == 0)
+                m_subscribers.erase(topicStr);
+        }
+    }
+
+    void notifyTopics(std::string topic, const uint8_t* msgData, size_t msgSize)
+    {
+        for (auto& kv: m_topics)
+            for (auto& t: kv.second)
+            {
+                if (t->matches(topic))
+                    t->onMessageAvailable(msgData, msgSize);
+            }
+    }
+
     void connect()
     {
-        m_nodeHandle.reset(new ros::NodeHandle());
+        if (!ros::isInitialized()) 
+            ros::Rate loop_rate(10);
+
+        if (!ros::master::check())
+            throw CppRuntimeException("ROS Master is not available.");
+
+        if (!m_nodeHandle.get())
+            m_nodeHandle.reset(new ros::NodeHandle());
     }
 
     void disconnect()
@@ -176,7 +128,12 @@ struct RosPubSubClient::Impl
     }
 
 private:
-    std::unique_ptr<ros::NodeHandle> m_nodeHandle;
+    std::unique_ptr<ros::NodeHandle> m_nodeHandle = nullptr;
+    std::future<void> m_future;
+    ros::Publisher m_pub;
+    std::map<std::string, ros::Subscriber> m_subscribers;
+    std::map<std::string, std::list<const Topic*>> m_topics;
+    RosPubSubClient::HostInformation m_hostCfg;
 };
 
 RosPubSubClient::RosPubSubClient(const RosPubSubClient::HostInformation &host):
@@ -198,12 +155,12 @@ void RosPubSubClient::disconnect()
 
 void RosPubSubClient::subscribe(const Topic &topic)
 {
-    // TODO: m_impl->subscribe(topic);
+    m_impl->subscribe(topic);
 }
 
 void RosPubSubClient::unsubscribe(const Topic& topic)
 {
-    // TODO: m_impl->unsubscribe(topic);
+    m_impl->unsubscribe(topic);
 }
 
 void RosPubSubClient::publish(const std::string &topic, const uint8_t* buffer, size_t size, int qos = 0, bool retain = false)
