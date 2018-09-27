@@ -21,6 +21,12 @@ public:
         std::string client_id;
         std::string nodeName;
         std::string nodeSubname;
+
+        /* Size of queue for incoming messages */
+        int subQueueSize;
+
+        /* Size of queue for outgoing messages */
+        int pubQueueSize;
     };
 
     RosPubSubClient(const RosPubSubClient::HostInformation& host);

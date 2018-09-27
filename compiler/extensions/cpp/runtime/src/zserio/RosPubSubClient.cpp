@@ -19,13 +19,29 @@ namespace zserio
 
 struct RosPubSubClient::Impl
 {
-    Impl(RosPubSubClient::HostInformation host): m_hostCfg(host)
+    struct RosInit
     {
-        int numArgs = 0;
-        if (!ros::Time::isValid()){
-            ros::init(numArgs, nullptr, m_hostCfg.nodeName);
+        RosInit(const std::string& nodeName)
+        {
+            int numArgs = 0;
+            if (!ros::isInitialized()){
+                ros::init(numArgs, nullptr, nodeName);
+                if (!m_future.valid())
+                    m_future = std::async(std::launch::async, std::function<void()>([](){ ros::spin(); }));
+            }
         }
+
+    private:
+        std::future<void> m_future;
+    };
+
+    static RosInit& initializeRosOnDemand(const std::string& nodeName) {
+      static RosInit instance(nodeName);
+      return instance;
     }
+
+    Impl(RosPubSubClient::HostInformation host): m_hostCfg(host)
+    { }
 
     ~Impl()
     { }
@@ -40,16 +56,16 @@ struct RosPubSubClient::Impl
         msg.zserio_bytes = std::vector<uint8_t>(buffer, buffer + size);
 
         if (m_pub.getTopic().empty()) {
-            m_pub = m_nodeHandle->advertise<ros_zserio_test::ZserioWrapper>(topic, 1000);
+            m_pub = m_nodeHandle->advertise<ros_zserio_test::ZserioWrapper>(topic, m_hostCfg.pubQueueSize);
         }
 
         m_pub.publish(msg);
-        ros::spinOnce();
     }
 
     void onRosMessageAvailable(const boost::shared_ptr<ros_zserio_test::ZserioWrapper const> msg,
                                std::string topic)
     {
+        std::cout << "Message " << topic << "\n";
         auto rawData = static_cast<const uint8_t*>(&msg->zserio_bytes[0]); 
         notifyTopics(topic, rawData, msg->zserio_bytes.size()); 
     }
@@ -68,15 +84,11 @@ struct RosPubSubClient::Impl
 
             m_subscribers[topicStr] = m_nodeHandle->subscribe<ros_zserio_test::ZserioWrapper>(
                     topic.topic(),
-                    100,
+                    m_hostCfg.subQueueSize,
                     callback
                     );
 
-
             if (!m_subscribers[topicStr]) throw CppRuntimeException("Unable to create subscriber.");
-
-            if (!m_future.valid())
-                m_future = std::async(std::launch::async, std::function<void()>([](){ ros::spin(); }));
         }
 
         if (m_subscribers.find(topicStr) != m_subscribers.end())
@@ -105,15 +117,14 @@ struct RosPubSubClient::Impl
         for (auto& kv: m_topics)
             for (auto& t: kv.second)
             {
-                if (t->matches(topic))
+                if (t->matches(topic)) 
                     t->onMessageAvailable(msgData, msgSize);
             }
     }
 
     void connect()
     {
-        if (!ros::isInitialized()) 
-            ros::Rate loop_rate(10);
+        initializeRosOnDemand(m_hostCfg.nodeName);
 
         if (!ros::master::check())
             throw CppRuntimeException("ROS Master is not available.");
@@ -129,7 +140,6 @@ struct RosPubSubClient::Impl
 
 private:
     std::unique_ptr<ros::NodeHandle> m_nodeHandle = nullptr;
-    std::future<void> m_future;
     ros::Publisher m_pub;
     std::map<std::string, ros::Subscriber> m_subscribers;
     std::map<std::string, std::list<const Topic*>> m_topics;
