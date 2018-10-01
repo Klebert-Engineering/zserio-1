@@ -35,6 +35,8 @@ cmake_minimum_required(VERSION 2.8.12.2)
 
 project(ZserioCppRuntime)
 
+set(ZSERIO_CXX_STANDARD 98)
+
 if (DEFINED ZSERIO_RUNTIME_INCLUDE_INSPECTOR)
     set(ZSERIO_RUNTIME_INCLUDE_INSPECTOR_DEFAULT ${ZSERIO_RUNTIME_INCLUDE_INSPECTOR})
 else ()
@@ -51,6 +53,9 @@ option(ZSERIO_RUNTIME_INCLUDE_INSPECTOR "Include support for Blob Inspector."
        ${ZSERIO_RUNTIME_INCLUDE_INSPECTOR_DEFAULT})
 option(ZSERIO_RUNTIME_INCLUDE_RELATIONAL "Include support for Zserio Relational Extension."
        ${ZSERIO_RUNTIME_INCLUDE_RELATIONAL_DEFAULT})
+
+option(ZSERIO_RUNTIME_INCLUDE_PUBSUB_ROS "Include support for ROS PubSub system." OFF)
+option(ZSERIO_RUNTIME_INCLUDE_PUBSUB_MQTT "Include support for MQTT PubSub system." OFF)
 
 if (ZSERIO_RUNTIME_INCLUDE_RELATIONAL)
     if (DEFINED ZSERIO_RUNTIME_SQLITE_LIBRARY)
@@ -116,14 +121,26 @@ set(ZSERIO_CPP_RUNTIME_LIB_SRCS
     zserio/VarUInt64Util.h
 )
 
-if (ZSERIO_RUNTIME_INCLUDE_PUBSUB)
+if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_MQTT)
+    set(ZSERIO_CPP_RUNTIME_LIB_SRCS
+	${ZSERIO_CPP_RUNTIME_LIB_SRCS}
+        zserio/MqttPubSubClient.cpp
+        zserio/MqttPubSubClient.h
+    )
+endif ()
+
+if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_ROS)
+    set(ZSERIO_CPP_RUNTIME_LIB_SRCS 
+        ${ZSERIO_CPP_RUNTIME_LIB_SRCS}
+        zserio/RosPubSubClient.cpp
+        zserio/RosPubSubClient.h
+    )
+endif ()
+
+if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_MQTT OR ZSERIO_RUNTIME_INCLUDE_PUBSUB_ROS)
     set(ZSERIO_CPP_RUNTIME_LIB_SRCS
 	${ZSERIO_CPP_RUNTIME_LIB_SRCS}
         zserio/PubSubClient.h
-        zserio/MqttPubSubClient.cpp
-        zserio/MqttPubSubClient.h
-	zserio/RosPubSubClient.cpp
-	zserio/RosPubSubClient.h
         zserio/Topic.cpp
         zserio/Topic.h
     )
@@ -165,17 +182,22 @@ add_library(ZserioCppRuntime STATIC ${ZSERIO_CPP_RUNTIME_LIB_SRCS})
 
 target_include_directories(ZserioCppRuntime PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-if (ZSERIO_RUNTIME_INCLUDE_PUBSUB)
-    set_target_properties (ZserioCppRuntime PROPERTIES
-        CXX_STANDARD 11
-        CXX_STANDARD_REQUIRED ON
-        CXX_EXTENSIONS NO
-        )
-    target_link_libraries(ZserioCppRuntime PUBLIC paho-mqtt3a)
-
+if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_ROS)
     find_package (catkin COMPONENTS roscpp REQUIRED)
     target_link_libraries(ZserioCppRuntime PUBLIC ${catkin_LIBRARIES})
+    set(ZSERIO_CXX_STANDARD 11)
 endif ()
+
+if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_MQTT)
+    target_link_libraries(ZserioCppRuntime PUBLIC paho-mqtt3a)
+    set(ZSERIO_CXX_STANDARD 11)
+endif()
+
+set_target_properties (ZserioCppRuntime PROPERTIES
+    CXX_STANDARD ${ZSERIO_CXX_STANDARD}
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS NO
+    )
 
 if (ZSERIO_RUNTIME_INCLUDE_RELATIONAL)
     target_link_libraries(ZserioCppRuntime PUBLIC ${ZSERIO_RUNTIME_SQLITE_LIBRARY})
