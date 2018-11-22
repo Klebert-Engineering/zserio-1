@@ -19,6 +19,11 @@ struct MqttPubSubClient::Impl
     Impl(MqttPubSubClient::HostInformation host): m_host(std::move(host))
     {  }
 
+    Impl(Impl&&) = delete;
+    Impl(const Impl&) = delete;
+    Impl& operator=(const Impl&) = delete;
+    Impl& operator=(Impl&&) = delete;
+
     ~Impl()
     {
         // Avoid throwing exception from within dtor by catch
@@ -81,9 +86,7 @@ struct MqttPubSubClient::Impl
             throw CppRuntimeException("Client is already connected.");
 
         const std::string hostAddr = "tcp://" + m_host.hostname + ":" + std::to_string(m_host.port);
-        std::cout << hostAddr <<  " " << m_host.client_id << std::endl;
         MQTTAsync_create(&m_client, hostAddr.c_str(), m_host.client_id.c_str(), MQTTCLIENT_PERSISTENCE_NONE, nullptr);
-        std::cout << "Creation successful" << std::endl;
         MQTTAsync_setCallbacks(m_client, this, onConnLost, onMessageArrived, nullptr);
 
         MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
