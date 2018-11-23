@@ -1,14 +1,8 @@
 package zserio.ast;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.HashSet;
-
 import zserio.antlr.ZserioParserTokenTypes;
 import zserio.antlr.util.BaseTokenAST;
 import zserio.antlr.util.ParserException;
-import zserio.tools.ZserioToolPrinter;
 
 /**
  * AST node for service types.

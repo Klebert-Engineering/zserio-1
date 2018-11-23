@@ -3,10 +3,11 @@ package zserio.emit.cpp;
 import zserio.ast.TopicType;
 import zserio.ast.ZserioType;
 import zserio.emit.cpp.types.CppNativeType;
+import zserio.emit.common.ZserioEmitException;
 
 public class TopicEmitterTemplateData extends CompoundTypeTemplateData
 {
-    public TopicEmitterTemplateData(TemplateDataContext context, TopicType type)
+    public TopicEmitterTemplateData(TemplateDataContext context, TopicType type) throws ZserioEmitException
     {
         super(context, type);
 

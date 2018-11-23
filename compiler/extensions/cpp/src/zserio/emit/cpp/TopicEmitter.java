@@ -3,6 +3,7 @@ package zserio.emit.cpp;
 import antlr.collections.AST;
 import zserio.ast.TopicType;
 import zserio.tools.Parameters;
+import zserio.emit.common.ZserioEmitException;
 
 public class TopicEmitter extends CppDefaultEmitter
 {
@@ -12,14 +13,12 @@ public class TopicEmitter extends CppDefaultEmitter
     }
 
     @Override
-    public void beginTopic(AST token) throws ZserioEmitCppException
+    public void beginTopic(TopicType token) throws ZserioEmitException
     {
-        if (!(token instanceof TopicType))
-            throw new ZserioEmitCppException("Unexpected token type in beginTopic!");
-        topicType = (TopicType)token;
+        topicType = token;
     }
 
-    public void endRoot() throws ZserioEmitCppException
+    public void endRoot() throws ZserioEmitException
     {
         final TemplateDataContext templateDataContext = getTemplateDataContext();
         final Object templateData = new TopicEmitterTemplateData(templateDataContext, topicType);

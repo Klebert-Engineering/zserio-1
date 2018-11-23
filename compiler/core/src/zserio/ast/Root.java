@@ -132,6 +132,8 @@ public class Root extends TokenAST
                     emitter.beginSqlDatabase((SqlDatabaseType)type);
                 else if (type instanceof ServiceType)
                     emitter.beginService((ServiceType)type);
+                else if (type instanceof TopicType)
+                    emitter.beginTopic((TopicType)type);
                 else
                     throw new ZserioEmitException("Unknown type '" + type.getClass() + "' in tree walker!");
             }

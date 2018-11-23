@@ -117,14 +117,18 @@ subtypeDeclaration
     ;
 
 topicDeclaration
-    : #(t:TOPIC i:ID a:STRING_LITERAL b:definedType
-          {
-              pkg.setType((BaseTokenAST)i, t);
-              beginScope((CompoundType)t);
-              ((CompoundType)t).setScope(scope, pkg);
-              scope.setSymbol((BaseTokenAST)i, t);
-          }
-      )
+    : #(t:TOPIC i:ID 
+                                    {
+                                        final TopicType topicType = (TopicType)t;
+                                        currentPackage.setLocalType((BaseTokenAST)i, topicType);
+                                        topicType.setPackage(currentPackage);
+                                        currentScope = topicType.getScope();
+                                        currentScope.setSymbol((BaseTokenAST)i, t);
+                                    }
+          a:STRING_LITERAL b:definedType
+       )                            {
+                                        currentScope = defaultScope;
+                                   }
     ;
 
 /**

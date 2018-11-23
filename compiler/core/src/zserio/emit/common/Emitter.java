@@ -12,6 +12,7 @@ import zserio.ast.SqlTableType;
 import zserio.ast.StructureType;
 import zserio.ast.Subtype;
 import zserio.ast.TranslationUnit;
+import zserio.ast.TopicType;
 import zserio.ast.UnionType;
 
 /**
@@ -161,6 +162,6 @@ public interface Emitter
      */
     public void beginService(ServiceType service) throws ZserioEmitException;
 
-    public void beginTopic(AST t);
-    public void endTopic(AST t);
+    public void beginTopic(TopicType t) throws ZserioEmitException;
+    public void endTopic(TopicType t) throws ZserioEmitException;
 }
