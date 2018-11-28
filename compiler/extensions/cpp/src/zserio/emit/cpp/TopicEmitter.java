@@ -1,6 +1,9 @@
 package zserio.emit.cpp;
 
+import java.util.ArrayList;
+import java.util.List;
 import antlr.collections.AST;
+import zserio.ast.Root;
 import zserio.ast.TopicType;
 import zserio.tools.Parameters;
 import zserio.emit.common.ZserioEmitException;
@@ -15,18 +18,23 @@ public class TopicEmitter extends CppDefaultEmitter
     @Override
     public void beginTopic(TopicType token) throws ZserioEmitException
     {
-        topicType = token;
+        topicTypes.add(token);
     }
 
-    public void endRoot() throws ZserioEmitException
+    @Override
+    public void endRoot(Root root) throws ZserioEmitException
     {
         final TemplateDataContext templateDataContext = getTemplateDataContext();
-        final Object templateData = new TopicEmitterTemplateData(templateDataContext, topicType);
-        processSourceTemplate(TEMPLATE_SOURCE_NAME, templateData, topicType);
-        processHeaderTemplate(TEMPLATE_HEADER_NAME, templateData, topicType);
+        for (TopicType topicType : topicTypes)
+        {
+            final TopicEmitterTemplateData templateData =
+                    new TopicEmitterTemplateData(templateDataContext, topicType);
+            processSourceTemplate(TEMPLATE_SOURCE_NAME, templateData, topicType);
+            processHeaderTemplate(TEMPLATE_HEADER_NAME, templateData, topicType);
+        }
     }
 
-    private TopicType topicType;
+    private final List<TopicType> topicTypes = new ArrayList<TopicType>();
     private static final String TEMPLATE_SOURCE_NAME = "Topic.cpp.ftl";
     private static final String TEMPLATE_HEADER_NAME = "Topic.h.ftl";
 }
