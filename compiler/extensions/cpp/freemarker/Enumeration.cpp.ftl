@@ -30,6 +30,11 @@ ${name}::${name}(e_${name} value) : m_value(value)
 {
 }
 
+${name}::${name}(_base_type baseTypeValue)
+        : m_value(static_cast<e_${name}>(baseTypeValue))
+{
+}
+
 ${name}::${name}(zserio::BitStreamReader& _in)
 {
     read(_in);

@@ -92,6 +92,20 @@ public class Field extends TokenAST
         return isAutoOptional || optionalClauseExpr != null;
     }
 
+    public boolean getIsExternal()
+    {
+        return isExternal;
+    }
+
+    public List<Parameter> getParameters()
+    {
+        final ZserioType resolvedFieldType = TypeReference.resolveType(fieldType);
+        if (!(resolvedFieldType instanceof CompoundType))
+            return new LinkedList<Parameter>();
+
+        return ((CompoundType)resolvedFieldType).getParameters();
+    }
+
     /**
      * Gets initializer expression associated with the field.
      *
@@ -233,6 +247,7 @@ public class Field extends TokenAST
     protected boolean evaluateChild(BaseTokenAST child) throws ParserException
     {
         final AST firstChildOfChild = child.getFirstChild();
+
         switch (child.getType())
         {
         case ZserioParserTokenTypes.ID:
@@ -242,6 +257,10 @@ public class Field extends TokenAST
         case ZserioParserTokenTypes.OPTIONAL:
             isAutoOptional = true;
             evaluateDocComment((TokenAST)child);
+            break;
+
+        case ZserioParserTokenTypes.EXTERN:
+            isExternal = true;
             break;
 
         case ZserioParserTokenTypes.ASSIGN:
@@ -288,6 +307,13 @@ public class Field extends TokenAST
                 return false;
             isVirtual = true;
             evaluateDocComment((TokenAST)child);
+            break;
+
+        case ZserioParserTokenTypes.STRUCTURE:
+            // allow nested structure-keyword for externals only
+            if (!isExternal)
+                return false;
+            fieldType = (ZserioType)child;
             break;
 
         default:
@@ -405,6 +431,7 @@ public class Field extends TokenAST
     private ZserioType fieldType = null;
     private String name = null;
     private boolean isAutoOptional = false;
+    private boolean isExternal = false;
     private Expression initializerExpr = null;
     private Expression optionalClauseExpr = null;
     private Expression constraintExpr = null;

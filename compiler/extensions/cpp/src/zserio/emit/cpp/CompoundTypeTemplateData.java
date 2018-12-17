@@ -22,6 +22,7 @@ public class CompoundTypeTemplateData extends UserTypeTemplateData
         final ExpressionFormatter cppExpressionFormatter = context.getExpressionFormatter(this);
         final ExpressionFormatter cppIndirectExpressionFormatter =
                 context.getOwnerIndirectExpressionFormatter(this);
+        boolean externals = false;
         for (Field fieldType : fieldTypeList)
         {
             final CompoundFieldTemplateData data = new CompoundFieldTemplateData(cppNativeTypeMapper,
@@ -29,7 +30,10 @@ public class CompoundTypeTemplateData extends UserTypeTemplateData
                     this, withWriterCode);
 
             fieldList.add(data);
+            if (fieldType.getIsExternal())
+                externals = true;
         }
+        hasExternals = externals;
 
         compoundParametersData = new CompoundParameterTemplateData(cppNativeTypeMapper, compoundType, this,
                 withWriterCode);
@@ -43,9 +47,32 @@ public class CompoundTypeTemplateData extends UserTypeTemplateData
         hasFieldWithOffset = compoundType.hasFieldWithOffset();
     }
 
+    public boolean getHasExternals()
+    {
+        return hasExternals;
+    }
+
     public Iterable<CompoundFieldTemplateData> getFieldList()
     {
         return fieldList;
+    }
+
+    public Iterable<CompoundFieldTemplateData> getFieldListWithoutComplexExternals()
+    {
+        List<CompoundFieldTemplateData> list = new ArrayList<CompoundFieldTemplateData>();
+        for (CompoundFieldTemplateData field : fieldList)
+            if (!field.getIsComplexExternal())
+                list.add(field);
+        return list;
+    }
+
+    public Iterable<CompoundFieldTemplateData> getComplexExternalFieldList()
+    {
+        List<CompoundFieldTemplateData> list = new ArrayList<CompoundFieldTemplateData>();
+        for (CompoundFieldTemplateData field : fieldList)
+            if (field.getIsComplexExternal())
+                list.add(field);
+        return list;
     }
 
     public CompoundParameterTemplateData getCompoundParametersData()
@@ -86,4 +113,5 @@ public class CompoundTypeTemplateData extends UserTypeTemplateData
     private final boolean needsChildrenInitialization;
     private final boolean withRangeCheckCode;
     private final boolean hasFieldWithOffset;
+    private final boolean hasExternals;
 }

@@ -3,12 +3,14 @@ package zserio.emit.cpp;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.LinkedList;
 
 import zserio.ast.ArrayType;
 import zserio.ast.UnionType;
 import zserio.ast.BitFieldType;
 import zserio.ast.ChoiceType;
 import zserio.ast.CompoundType;
+import zserio.ast.Parameter;
 import zserio.ast.ZserioType;
 import zserio.ast.ZserioTypeUtil;
 import zserio.ast.Expression;
@@ -33,19 +35,52 @@ public class CompoundFieldTemplateData
             ExpressionFormatter cppExpressionFormatter, ExpressionFormatter cppIndirectExpressionFormatter,
             IncludeCollector includeCollector, boolean withWriterCode) throws ZserioEmitException
     {
+        isExternal = field.getIsExternal();
         final ZserioType fieldType = TypeReference.resolveType(field.getFieldType());
         final ZserioType baseFieldType = TypeReference.resolveBaseType(fieldType);
         optional = createOptional(field, cppExpressionFormatter);
         compound = createCompound(cppNativeTypeMapper, cppExpressionFormatter, cppIndirectExpressionFormatter,
                 parentType, baseFieldType, withWriterCode);
 
-        final CppNativeType fieldNativeType = cppNativeTypeMapper.getCppType(fieldType);
-        includeCollector.addHeaderIncludesForType(fieldNativeType);
+        // skip type resolving for external structs/choices
+        if (!isExternal || ZserioTypeUtil.isBuiltIn(baseFieldType))
+        {
+            final CppNativeType fieldNativeType = cppNativeTypeMapper.getCppType(fieldType);
+            includeCollector.addHeaderIncludesForType(fieldNativeType);
+            cppTypeName = fieldNativeType.getFullName();
+            cppArgumentTypeName = fieldNativeType.getArgumentTypeName();
+            zserioTypeName = ZserioTypeUtil.getFullName(fieldType);
+            isSimpleType = fieldNativeType.isSimpleType();
+            isEnum = fieldNativeType instanceof NativeEnumType;
+            array = createArray(fieldNativeType, baseFieldType, parentType, cppNativeTypeMapper,
+                cppExpressionFormatter, cppIndirectExpressionFormatter, withWriterCode);
+            final boolean isOptionalField = (optional != null);
+            optionalHolder = createOptionalHolder(fieldType, baseFieldType, isOptionalField, cppNativeTypeMapper,
+                    includeCollector);
+            isComplexExternal = false;
+            externalParameters = null;
+        }
+        else
+        {
+            cppTypeName = "EXTERN";
+            cppArgumentTypeName = "";
+            zserioTypeName = "";
+            isSimpleType = false;
+            isEnum = false;
+            array = null;
+            optionalHolder = null;
+            isComplexExternal = true;
+
+            ArrayList<ParameterData> parameters = new ArrayList<ParameterData>();
+            for (Parameter parameter : field.getParameters())
+            {
+                String cppType = cppNativeTypeMapper.getCppType(parameter.getParameterType()).getName();
+                parameters.add(new ParameterData(parameter.getName(), cppType));
+            }
+            externalParameters = parameters;
+        }
 
         name = field.getName();
-        cppTypeName = fieldNativeType.getFullName();
-        cppArgumentTypeName = fieldNativeType.getArgumentTypeName();
-        zserioTypeName = ZserioTypeUtil.getFullName(fieldType);
 
         getterName = AccessorNameFormatter.getGetterName(field);
         setterName = AccessorNameFormatter.getSetterName(field);
@@ -57,21 +92,29 @@ public class CompoundFieldTemplateData
 
         usesAnyHolder = (parentType instanceof ChoiceType) || (parentType instanceof UnionType);
 
-        isSimpleType = fieldNativeType.isSimpleType();
-        isEnum = fieldNativeType instanceof NativeEnumType;
 
         constraint = createConstraint(field, cppExpressionFormatter);
 
         offset = createOffset(field, cppNativeTypeMapper, cppExpressionFormatter,
                 cppIndirectExpressionFormatter);
-        array = createArray(fieldNativeType, baseFieldType, parentType, cppNativeTypeMapper,
-                cppExpressionFormatter, cppIndirectExpressionFormatter, withWriterCode);
         runtimeFunction = CppRuntimeFunctionDataCreator.createData(baseFieldType, cppExpressionFormatter);
         bitSizeValue = createBitSizeValue(baseFieldType, cppExpressionFormatter);
-        final boolean isOptionalField = (optional != null);
-        optionalHolder = createOptionalHolder(fieldType, baseFieldType, isOptionalField, cppNativeTypeMapper,
-                includeCollector);
         this.withWriterCode = withWriterCode;
+    }
+
+    public boolean getIsExternal()
+    {
+        return isExternal;
+    }
+
+    public Iterable<ParameterData> getExternalParameters()
+    {
+        return externalParameters;
+    }
+
+    public boolean getIsComplexExternal()
+    {
+        return isComplexExternal;
     }
 
     public Optional getOptional()
@@ -177,6 +220,28 @@ public class CompoundFieldTemplateData
     public boolean getWithWriterCode()
     {
         return withWriterCode;
+    }
+
+    public class ParameterData
+    {
+        public ParameterData(String n, String t)
+        {
+            name = n;
+            cppType = t;
+        }
+
+        public String getName()
+        {
+            return name;
+        }
+
+        public String getCppType()
+        {
+            return cppType;
+        }
+
+        private String name;
+        private String cppType;
     }
 
     public static class Optional
@@ -635,6 +700,7 @@ public class CompoundFieldTemplateData
 
     private final Optional                      optional;
     private final Compound                      compound;
+    private final ArrayList<ParameterData>      externalParameters;
     private final String                        name;
     private final String                        cppTypeName;
     private final String                        cppArgumentTypeName;
@@ -654,4 +720,6 @@ public class CompoundFieldTemplateData
     private final String                        bitSizeValue;
     private final OptionalHolder                optionalHolder;
     private final boolean                       withWriterCode;
+    private final boolean                       isExternal;
+    private final boolean                       isComplexExternal;
 }

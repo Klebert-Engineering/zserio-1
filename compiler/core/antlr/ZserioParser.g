@@ -43,6 +43,7 @@ tokens
     ENUM="enum"<AST=zserio.ast.EnumType>;
     EQ<AST=zserio.ast.Expression>;
     EXPLICIT="explicit"<AST=zserio.ast.Expression>;
+    EXTERN="extern";
     FIELD<AST=zserio.ast.Field>;
     FLOAT_LITERAL<AST=zserio.ast.Expression>;
     FLOAT16="float16"<AST=zserio.ast.FloatType>;
@@ -212,12 +213,39 @@ structureFieldDefinition!
     :   (a:fieldAlignment)?
         l:fieldOffset
         (p:OPTIONAL)?
-        t:fieldTypeId
+        (e:EXTERN f:externalFieldTypeId | t:fieldTypeId)
         (i:fieldInitializer)?
         (o:fieldOptionalClause)?
         (c:fieldConstraint)?
         {
-            #structureFieldDefinition = #([FIELD], t, p, i, o, c, l, a);
+            #structureFieldDefinition = #([FIELD], e, f, t, p, i, o, c, l, a);
+        }
+    ;
+
+externalFieldTypeId!
+    :   (e:ENUM | t:builtinType | x:externalTypeReference)
+        i:ID
+        {
+            if (#e != null)
+            {
+                #externalFieldTypeId = #(null, [UINT64], i);
+            }
+            if (#t != null)
+            {
+                #externalFieldTypeId = #(null, t, i);
+            }
+            else
+            {
+                #externalFieldTypeId = #(null, x, i);
+            }
+        }
+    ;
+
+externalTypeReference!
+    :   (STRUCTURE | CHOICE)
+        (a:parameterList)?
+        {
+            #externalTypeReference = #([STRUCTURE], a);
         }
     ;
 
@@ -521,6 +549,7 @@ parameterDefinition
             #parameterDefinition = #([PARAM], #parameterDefinition);
         }
     ;
+
 
 /**
  * typeReference.

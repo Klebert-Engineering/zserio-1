@@ -111,6 +111,9 @@ void ${name}::initializeChildren()
 </#if>
 <@compound_parameter_accessors_definition name, compoundParametersData/>
 <#list fieldList as field>
+<#if field.isComplexExternal>
+<@compound_external_field_accessors_definition field name/>
+<#else>
 <@compound_field_getter_definition field name "compound_return_field"/>
 <@compound_field_const_getter_definition field name "compound_return_field"/>
 <@compound_field_setter_definition field name "compound_set_field"/>
@@ -122,7 +125,18 @@ bool ${name}::${field.optional.indicatorName}() const
 }
 
     </#if>
+</#if>
 </#list>
+<#if hasExternals>
+${name}::~${name}()
+{
+    <#list complexExternalFieldList as field>
+    if (m_${field.name}_BUFFER)
+        delete m_${field.name}_BUFFER;
+    </#list><#t>
+}
+
+</#if>
 <@compound_functions_definition name, compoundFunctionsData/>
 <#macro structure_align_field field indent>
     <#local I>${""?left_pad(indent * 4)}</#local>
@@ -207,18 +221,19 @@ size_t ${name}::initializeOffsets(size_t _bitPosition)
 }
 </#if>
 
-bool ${name}::operator==(const ${name}&<#if compoundParametersData.list?has_content || fieldList?has_content> _other</#if>) const
+bool ${name}::operator==(const ${name}&<#if compoundParametersData.list?has_content || fieldListWithoutComplexExternals?has_content> _other</#if>) const
 {
-<#if compoundParametersData.list?has_content || fieldList?has_content>
+<#if compoundParametersData.list?has_content || fieldListWithoutComplexExternals?has_content>
     if (this != &_other)
     {
         return
-                <@compound_parameter_comparison compoundParametersData, fieldList?has_content/>
-    <#list fieldList as field>
+                <@compound_parameter_comparison compoundParametersData, fieldListWithoutComplexExternals?has_content/>
+    <#list fieldListWithoutComplexExternals as field>
         <#if field.optional?? && field.optional.clause??>
                 (!(${field.optional.clause}) || m_${field.name} == _other.m_${field.name})<#if field_has_next> &&<#else>;</#if>
         <#else>
-                (m_${field.name} == _other.m_${field.name})<#if field_has_next> &&<#else>;</#if>
+                (m_${field.name} == _other.m_${field.name})<#rt>
+<#if field_has_next> &&<#else>;</#if>
         </#if>
     </#list>
     }
@@ -232,12 +247,12 @@ int ${name}::hashCode() const
     int _result = zserio::HASH_SEED;
 
     <@compound_parameter_hash_code compoundParametersData/>
-<#list fieldList as field>
+<#list fieldListWithoutComplexExternals as field>
     <#if field.optional?? && field.optional.clause??>
     if (${field.optional.clause})
         _result = zserio::calcHashCode(_result, m_${field.name});
     <#else>
-    _result = zserio::calcHashCode(_result, m_${field.name});
+        _result = zserio::calcHashCode(_result, m_${field.name});
     </#if>
     <#if !field_has_next>
 

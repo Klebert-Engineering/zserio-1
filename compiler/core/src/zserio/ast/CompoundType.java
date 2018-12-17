@@ -151,6 +151,10 @@ public abstract class CompoundType extends TokenAST implements ZserioScopedType,
     {
         for (Field field : fields)
         {
+            // external types always need initialization for the function pointers
+            if (field.getIsExternal())
+                return true;
+
             final ZserioType fieldBaseType = TypeReference.resolveBaseType(field.getFieldReferencedType());
             if (fieldBaseType instanceof CompoundType)
             {
@@ -252,6 +256,9 @@ public abstract class CompoundType extends TokenAST implements ZserioScopedType,
     {
         for (Field field : fields)
         {
+            if (field.getIsExternal())
+                continue;
+
             final ZserioType usedType = TypeReference.resolveType(field.getFieldReferencedType());
             if (!ZserioTypeUtil.isBuiltIn(usedType))
                 usedTypeSet.add(usedType);

@@ -82,8 +82,24 @@ structureDeclaration
     ;
 
 structureFieldDefinition
-    :   #(FIELD (typeReference | fieldArrayType) ID (OPTIONAL)? (fieldInitializer)? (fieldOptionalClause)?
+    :   #(FIELD (externalTypeReference | typeReference | fieldArrayType) ID (OPTIONAL)? (fieldInitializer)? (fieldOptionalClause)?
                 (fieldConstraint)? (fieldOffset)? (fieldAlignment)?)
+    ;
+
+externalTypeReference
+    : EXTERN (builtinType | externalComplexType)
+    ;
+
+externalComplexType
+    : #(STRUCTURE (externalParameterList)?)
+    ;
+
+externalParameterList
+    :   (externalParameterDefinition)+
+    ;
+
+externalParameterDefinition
+    :   #(p:PARAM definedType i:ID)
     ;
 
 fieldArrayType
@@ -318,7 +334,6 @@ parameterList
 parameterDefinition
     :   #(PARAM definedType ID)
     ;
-
 
 /**
  * typeReference.

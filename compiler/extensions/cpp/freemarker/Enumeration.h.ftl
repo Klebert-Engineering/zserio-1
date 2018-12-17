@@ -37,6 +37,7 @@ public:
 
     ${name}();
     ${name}(e_${name} value);
+    ${name}(_base_type baseTypeValue);
     explicit ${name}(zserio::BitStreamReader& _in);
 <#if withInspectorCode>
     explicit ${name}(const zserio::BlobInspectorTree& _tree);

@@ -17,6 +17,9 @@
 #include <zserio/inspector/BlobInspectorTree.h>
 </#if>
 <@system_includes headerSystemIncludes, false/>
+<#if hasExternals>
+#include <functional>
+</#if>
 
 <@user_includes headerUserIncludes, true/>
 <@namespace_begin package.path/>
@@ -36,6 +39,10 @@ public:
     <@compound_copy_constructor_declaration compoundConstructorsData/>
     <@compound_assignment_operator_declaration compoundConstructorsData/>
 </#if>
+<#if hasExternals>
+
+    ~${name}();
+</#if>
 <#if needs_compound_initialization(compoundConstructorsData) || needsChildrenInitialization>
 
     <#if needs_compound_initialization(compoundConstructorsData)>
@@ -48,10 +55,14 @@ public:
 
     <@compound_parameter_accessors_declaration compoundParametersData/>
 <#list fieldList as field>
+<#if field.isComplexExternal>
+    <@compound_external_field_accessors_declaration field/>
+<#else>
     <@compound_field_accessors_declaration field/>
     <#if field.optional??>
     bool ${field.optional.indicatorName}() const;
     </#if>
+</#if>
 
 </#list>
     <@compound_functions_declaration compoundFunctionsData/>
@@ -89,7 +100,24 @@ private:
     <@compound_parameter_members compoundParametersData/>
     <@compound_constructor_members compoundConstructorsData/>
 <#list fieldList as field>
+
+<#if field.isComplexExternal>
+    size_t m_${field.name}_SIZE = uint64_t();
+    uint8_t* m_${field.name}_BUFFER = nullptr;
+    uint8_t m_${field.name}_PREPEND = uint8_t();
+    std::function<void(zserio::BitStreamWriter&, zserio::PreWriteAction)> m_${field.name}_WRITER = nullptr;
+    std::function<void(zserio::BitStreamReader&)> m_${field.name}_READER = nullptr;
+    std::function<size_t(size_t)> m_${field.name}_BITSIZEOF = nullptr;
+    std::function<size_t(size_t)> m_${field.name}_INITIALIZEOFFSET = nullptr;
+<#if field.externalParameters?has_content>
+    std::function<void(<#rt>
+<#list field.externalParameters as parameter><#t>
+${parameter.cppType} ${parameter.name}<#if parameter_has_next>, </#if><#t>
+</#list>)> m_${field.name}_INITIALIZE = nullptr;
+</#if>
+ <#else>
     <#if field.optionalHolder??>${field.optionalHolder.cppTypeName}<#else>${field.cppTypeName}</#if> m_${field.name};
+ </#if>
 </#list>
 };
 

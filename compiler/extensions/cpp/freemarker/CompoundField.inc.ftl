@@ -42,6 +42,35 @@ ${I}        ${field.cppTypeName}(${constructorArguments}));
     <#elseif field.optionalHolder??>
 ${I}m_${field.name}.reset(new (m_${field.name}.getResetStorage())
 ${I}        ${field.cppTypeName}(${constructorArguments}));
+    <#elseif field.isComplexExternal>
+${I}int64_t skip = (uint64_t)_in.readVarUInt();
+<#if field.externalParameters?has_content>
+${I}if (m_${field.name}_READER && m_${field.name}_INITIALIZE)
+${I}{
+${I}    m_${field.name}_INITIALIZE(<#rt>
+<#list field.externalParameters as parameter>m_${parameter.name}<#if parameter_has_next>, </#if><#t>
+</#list>);
+<#else>
+${I}if (m_${field.name}_READER)
+${I}{
+</#if>
+${I}    m_${field.name}_READER(_in);
+${I}}
+${I}else
+${I}{
+${I}    size_t bitPos = _in.getBitPosition();
+${I}    m_${field.name}_SIZE = skip;
+${I}    m_${field.name}_PREPEND = bitPos % 64;
+${I}    size_t bufferSizeBits = (skip + m_${field.name}_PREPEND);
+${I}    size_t bufferSize = bufferSizeBits / 8 + ((bufferSizeBits % 8) > 0 ? 1 : 0);
+${I}    m_${field.name}_BUFFER = static_cast<uint8_t*>(malloc(bufferSize * sizeof(uint8_t)));
+${I}    zserio::BitStreamWriter writer(m_${field.name}_BUFFER, bufferSize);
+${I}    writer.writeBits64(0, m_${field.name}_PREPEND);
+${I}    constexpr auto junkSize = 32;
+${I}    for (auto i=0; i<(skip/junkSize); ++i)
+${I}        writer.writeBits(_in.readBits(junkSize), junkSize);
+${I}    writer.writeBits(_in.readBits(skip%junkSize), skip%junkSize);
+${I}}
     <#elseif field.array?? || field.compound??>
 ${I}m_${field.name}.read(${constructorArguments});
     <#else>
@@ -122,6 +151,18 @@ ${I}_out.write${field.runtimeFunction.suffix}(<@compound_get_field field/><#if f
     <@compound_write_field_array_prolog field, compoundName, indent/>
 ${I}<@compound_get_field field/>.write(_out<@array_auto_length field.array/><@array_offset_checker field/><#rt>
         <#lt><@array_element_bit_size field.array/>);
+    <#elseif field.isComplexExternal>
+${I}_out.writeVarUInt(m_${field.name}_SIZE);
+<#if field.externalParameters?has_content>
+${I}if (!m_${field.name}_INITIALIZE)
+${I}    throw zserio::CppRuntimeException("External initialize-function not registered!");
+${I}m_${field.name}_INITIALIZE(<#rt>
+<#list field.externalParameters as parameter>m_${parameter.name}<#if parameter_has_next>, </#if><#t>
+</#list>);
+</#if>
+${I}if (!m_${field.name}_WRITER)
+${I}    throw zserio::CppRuntimeException("External write-function not registered!");
+${I}m_${field.name}_WRITER(_out, _preWriteAction);
     <#else>
 ${I}<@compound_get_field field/>.write(_out, zserio::NO_PRE_WRITE_ACTION);
     </#if>
@@ -511,6 +552,20 @@ ${I}_endBitPosition += <@compound_get_field field/>.bitSizeOf(_endBitPosition<#r
 ${I}_endBitPosition += ${field.bitSizeValue};
     <#elseif field.runtimeFunction??>
 ${I}_endBitPosition += zserio::getBitSizeOf${field.runtimeFunction.suffix}(<@compound_get_field field/>);
+    <#elseif field.isComplexExternal>
+${I}if (!m_${field.name}_BITSIZEOF)
+${I}    throw zserio::CppRuntimeException("External bitSizeOf-function not registered!");
+${I}size_t _${field.name}_SKIP = 8;
+${I}size_t _${field.name}_SIZE = 0;
+${I}while (true)
+${I}{
+${I}    _${field.name}_SIZE = m_${field.name}_BITSIZEOF(_endBitPosition + _${field.name}_SKIP);
+${I}    if (zserio::getBitSizeOfVarUInt(_${field.name}_SIZE) == _${field.name}_SKIP)
+${I}        break;
+${I}    _${field.name}_SKIP += 8;
+${I}}
+${I}_endBitPosition += _${field.name}_SKIP;
+${I}_endBitPosition += _${field.name}_SIZE;
     <#else>
 ${I}_endBitPosition += <@compound_get_field field/>.bitSizeOf(_endBitPosition);
     </#if>
@@ -528,6 +583,21 @@ ${I}_endBitPosition = <@compound_get_field field/>.initializeOffsets(_endBitPosi
 ${I}_endBitPosition += ${field.bitSizeValue};
     <#elseif field.runtimeFunction??>
 ${I}_endBitPosition += zserio::getBitSizeOf${field.runtimeFunction.suffix}(<@compound_get_field field/>);
+    <#elseif field.isComplexExternal>
+${I}if (!m_${field.name}_BITSIZEOF)
+${I}    throw zserio::CppRuntimeException("External bitSizeOf-function not registered!");
+${I}if (!m_${field.name}_INITIALIZEOFFSET)
+${I}    throw zserio::CppRuntimeException("External initializeOffsets-function not registered!");
+${I}size_t _${field.name}_SKIP = 8;
+${I}while (true)
+${I}{
+${I}    m_${field.name}_SIZE = m_${field.name}_BITSIZEOF(_endBitPosition + _${field.name}_SKIP);
+${I}    if (zserio::getBitSizeOfVarUInt(m_${field.name}_SIZE) == _${field.name}_SKIP)
+${I}        break;
+${I}    _${field.name}_SKIP += 8;
+${I}}
+${I}_endBitPosition += _${field.name}_SKIP;
+${I}_endBitPosition = m_${field.name}_INITIALIZEOFFSET(_endBitPosition);
     <#else>
 ${I}_endBitPosition = <@compound_get_field field/>.initializeOffsets(_endBitPosition);
     </#if>
@@ -544,6 +614,40 @@ ${I}_endBitPosition = <@compound_get_field field/>.initializeOffsets(_endBitPosi
     </#if>
 </#macro>
 
+<#macro compound_external_field_accessors_declaration field>
+    void ${field.setterName}Reader(std::function<void(zserio::BitStreamReader&)> f);
+    void ${field.setterName}Writer(std::function<void(zserio::BitStreamWriter&, zserio::PreWriteAction _preWriteAction)> f);
+    void ${field.setterName}BitSizeOf(std::function<size_t(size_t _bitPosition)> f);
+    void ${field.setterName}InitOffset(std::function<size_t(size_t _bitPosition)> f);
+<#if field.externalParameters?has_content>
+    void ${field.setterName}Initialize(std::function<void(<#rt>
+<#list field.externalParameters as parameter><#t>
+${parameter.cppType} ${parameter.name}<#if parameter_has_next>, </#if><#t>
+</#list>)> f);
+</#if>
+    void ${field.name}Read();
+
+    template <class EXTERNAL>
+    void ${field.setterName}ReaderFunctions(EXTERNAL &external)
+    {
+        ${field.setterName}Reader(std::bind(&EXTERNAL::read, &external, std::placeholders::_1));
+<#if field.externalParameters?has_content>
+        ${field.setterName}Initialize(std::bind(&EXTERNAL::initialize, &external, std::placeholders::_1) );
+</#if>
+    }
+
+    template <class EXTERNAL>
+    void ${field.setterName}WriterFunctions(EXTERNAL &external)
+    {
+        ${field.setterName}Writer(std::bind(&EXTERNAL::write, &external, std::placeholders::_1, std::placeholders::_2));
+        ${field.setterName}BitSizeOf(std::bind(&EXTERNAL::bitSizeOf, &external, std::placeholders::_1));
+        ${field.setterName}InitOffset(std::bind(&EXTERNAL::initializeOffsets, &external, std::placeholders::_1) );
+<#if field.externalParameters?has_content>
+        ${field.setterName}Initialize(std::bind(&EXTERNAL::initialize, &external, std::placeholders::_1) );
+</#if>
+    }
+</#macro>
+
 <#macro compound_field_getter_definition field compoundName returnFieldMacroName>
     <#if field.withWriterCode && !field.isSimpleType>
 ${field.cppTypeName}& ${compoundName}::${field.getterName}()
@@ -552,6 +656,51 @@ ${field.cppTypeName}& ${compoundName}::${field.getterName}()
 }
 
     </#if>
+</#macro>
+
+<#macro compound_external_field_accessors_definition field compoundName>
+void ${compoundName}::${field.setterName}Reader(std::function<void(zserio::BitStreamReader&)> f)
+{
+    m_${field.name}_READER = f;
+}
+
+void ${compoundName}::${field.setterName}Writer(std::function<void(zserio::BitStreamWriter&, zserio::PreWriteAction _preWriteAction)> f)
+{
+    m_${field.name}_WRITER = f;
+}
+
+void ${compoundName}::${field.setterName}BitSizeOf(std::function<size_t(size_t _bitPosition)> f)
+{
+    m_${field.name}_BITSIZEOF = f;
+}
+
+void ${compoundName}::${field.setterName}InitOffset(std::function<size_t(size_t _bitPosition)> f)
+{
+    m_${field.name}_INITIALIZEOFFSET = f;
+}
+
+<#if field.externalParameters?has_content>
+void ${compoundName}::${field.setterName}Initialize(std::function<void(<#rt>
+<#list field.externalParameters as parameter><#t>
+${parameter.cppType} ${parameter.name}<#if parameter_has_next>, </#if><#t>
+</#list>)> f)
+{
+    m_${field.name}_INITIALIZE = f;
+}
+</#if>
+
+void ${compoundName}::${field.name}Read()
+{
+    if (!m_${field.name}_READER)
+        throw zserio::CppRuntimeException("External reader-function not registered!");
+
+    if (!m_${field.name}_BUFFER)
+        throw zserio::CppRuntimeException("External structure initialized during read!");
+
+    zserio::BitStreamReader in(m_${field.name}_BUFFER, m_${field.name}_SIZE);
+    in.setBitPosition(m_${field.name}_PREPEND);
+    m_${field.name}_READER(in);
+}
 </#macro>
 
 <#macro compound_field_const_getter_definition field compoundName returnFieldMacroName>
@@ -616,7 +765,17 @@ ${I}m_${field.name} = <#if field.initializer??>${field.initializer}<#else>${fiel
     <#if field.usesAnyHolder>
 ${I}m_objectChoice(_other.m_objectChoice)
     <#else>
+<#if field.isComplexExternal>
+${I}m_${field.name}_WRITER(_other.m_${field.name}_WRITER),
+${I}m_${field.name}_READER(_other.m_${field.name}_READER),
+${I}m_${field.name}_BITSIZEOF(_other.m_${field.name}_BITSIZEOF),
+<#if field.externalParameters?has_content>
+${I}m_${field.name}_INITIALIZE(_other.m_${field.name}_INITIALIZE),
+</#if>
+${I}m_${field.name}_INITIALIZEOFFSET(_other.m_${field.name}_INITIALIZEOFFSET)<#if hasNext>,</#if>
+<#else>
 ${I}m_${field.name}(_other.m_${field.name})<#if hasNext>,</#if>
+</#if>
     </#if>
 </#macro>
 
@@ -625,7 +784,17 @@ ${I}m_${field.name}(_other.m_${field.name})<#if hasNext>,</#if>
     <#if field.usesAnyHolder>
 ${I}m_objectChoice = _other.m_objectChoice;
     <#else>
+<#if field.isComplexExternal>
+${I}m_${field.name}_WRITER = _other.m_${field.name}_WRITER;
+${I}m_${field.name}_READER = _other.m_${field.name}_READER;
+${I}m_${field.name}_BITSIZEOF = _other.m_${field.name}_BITSIZEOF;
+${I}m_${field.name}_INITIALIZEOFFSET = _other.m_${field.name}_INITIALIZEOFFSET;
+<#if field.externalParameters?has_content>
+${I}m_${field.name}_INITIALIZE = _other.m_${field.name}_INITIALIZE;
+</#if>
+<#else>
 ${I}m_${field.name} = _other.m_${field.name};
+</#if>
     </#if>
 </#macro>
 
@@ -650,6 +819,9 @@ ${I}m_${field.name} = _other.m_${field.name};
             <#local initializeCommand><@compound_get_field field/>.initializeElements(<#rt>
                 <#lt><@element_children_initializer_name compoundName, field.name/>());</#local>
         </#if>
+    <#elseif field.isComplexExternal>
+${I}if (!m_${field.name}_BITSIZEOF)
+${I}    throw zserio::CppRuntimeException("External bitSizeOf-function not registered!");
     </#if>
     <#if initializeCommand??>
         <#if field.optional??>
@@ -702,7 +874,9 @@ ${I};
 
 <#function has_field_with_initialization fieldList>
     <#list fieldList as field>
-        <#if field.compound??>
+        <#if field.isComplexExternal>
+            <#return true>
+        <#elseif field.compound??>
             <#if needs_compound_field_initialization(field.compound)>
                 <#return true>
             </#if>

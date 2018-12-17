@@ -138,7 +138,7 @@ structureDeclaration
 
 structureFieldDefinition
     :   #(f:FIELD
-            (typeReference | a:fieldArrayType)
+            (externalTypeReference | typeReference | a:fieldArrayType)
             i:ID
             (OPTIONAL)?
             (fieldInitializer)?
@@ -151,6 +151,22 @@ structureFieldDefinition
             )?
             (fieldAlignment)?
         )
+    ;
+
+externalTypeReference
+    : EXTERN (builtinType | externalComplexType)
+    ;
+
+externalComplexType
+    : #(STRUCTURE (externalParameterList)?)
+    ;
+
+externalParameterList
+    :   (externalParameterDefinition)+
+    ;
+
+externalParameterDefinition
+    :   #(p:PARAM definedType i:ID)
     ;
 
 fieldArrayType
