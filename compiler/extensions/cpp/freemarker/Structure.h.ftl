@@ -104,7 +104,6 @@ private:
 <#if field.isComplexExternal>
     size_t m_${field.name}_SIZE = uint64_t();
     uint8_t* m_${field.name}_BUFFER = nullptr;
-    uint8_t m_${field.name}_PREPEND = uint8_t();
     std::function<void(zserio::BitStreamWriter&, zserio::PreWriteAction)> m_${field.name}_WRITER = nullptr;
     std::function<void(zserio::BitStreamReader&)> m_${field.name}_READER = nullptr;
     std::function<size_t(size_t)> m_${field.name}_BITSIZEOF = nullptr;

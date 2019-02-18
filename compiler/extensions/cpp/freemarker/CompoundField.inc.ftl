@@ -43,6 +43,7 @@ ${I}        ${field.cppTypeName}(${constructorArguments}));
 ${I}m_${field.name}.reset(new (m_${field.name}.getResetStorage())
 ${I}        ${field.cppTypeName}(${constructorArguments}));
     <#elseif field.isComplexExternal>
+${I}_in.alignTo(64); 
 ${I}int64_t skip = (uint64_t)_in.readVarUInt();
 <#if field.externalParameters?has_content>
 ${I}if (m_${field.name}_READER && m_${field.name}_INITIALIZE)
@@ -58,14 +59,10 @@ ${I}    m_${field.name}_READER(_in);
 ${I}}
 ${I}else
 ${I}{
-${I}    size_t bitPos = _in.getBitPosition();
 ${I}    m_${field.name}_SIZE = skip;
-${I}    m_${field.name}_PREPEND = bitPos % 64;
-${I}    size_t bufferSizeBits = (skip + m_${field.name}_PREPEND);
-${I}    size_t bufferSize = bufferSizeBits / 8 + ((bufferSizeBits % 8) > 0 ? 1 : 0);
+${I}    size_t bufferSize = m_${field.name}_SIZE / 8 + ((m_${field.name}_SIZE % 8) > 0 ? 1 : 0);
 ${I}    m_${field.name}_BUFFER = static_cast<uint8_t*>(malloc(bufferSize * sizeof(uint8_t)));
 ${I}    zserio::BitStreamWriter writer(m_${field.name}_BUFFER, bufferSize);
-${I}    writer.writeBits64(0, m_${field.name}_PREPEND);
 ${I}    constexpr auto junkSize = 32;
 ${I}    for (auto i=0; i<(skip/junkSize); ++i)
 ${I}        writer.writeBits(_in.readBits(junkSize), junkSize);
@@ -152,6 +149,7 @@ ${I}_out.write${field.runtimeFunction.suffix}(<@compound_get_field field/><#if f
 ${I}<@compound_get_field field/>.write(_out<@array_auto_length field.array/><@array_offset_checker field/><#rt>
         <#lt><@array_element_bit_size field.array/>);
     <#elseif field.isComplexExternal>
+${I}_out.alignTo(64);
 ${I}_out.writeVarUInt(m_${field.name}_SIZE);
 <#if field.externalParameters?has_content>
 ${I}if (!m_${field.name}_INITIALIZE)
@@ -553,6 +551,7 @@ ${I}_endBitPosition += ${field.bitSizeValue};
     <#elseif field.runtimeFunction??>
 ${I}_endBitPosition += zserio::getBitSizeOf${field.runtimeFunction.suffix}(<@compound_get_field field/>);
     <#elseif field.isComplexExternal>
+${I}_endBitPosition = zserio::alignTo(64, _endBitPosition);
 ${I}if (!m_${field.name}_BITSIZEOF)
 ${I}    throw zserio::CppRuntimeException("External bitSizeOf-function not registered!");
 ${I}size_t _${field.name}_SKIP = 8;
@@ -584,6 +583,7 @@ ${I}_endBitPosition += ${field.bitSizeValue};
     <#elseif field.runtimeFunction??>
 ${I}_endBitPosition += zserio::getBitSizeOf${field.runtimeFunction.suffix}(<@compound_get_field field/>);
     <#elseif field.isComplexExternal>
+${I}_endBitPosition = zserio::alignTo(64, _endBitPosition);
 ${I}if (!m_${field.name}_BITSIZEOF)
 ${I}    throw zserio::CppRuntimeException("External bitSizeOf-function not registered!");
 ${I}if (!m_${field.name}_INITIALIZEOFFSET)
@@ -698,7 +698,6 @@ void ${compoundName}::${field.name}Read()
         throw zserio::CppRuntimeException("External structure initialized during read!");
 
     zserio::BitStreamReader in(m_${field.name}_BUFFER, m_${field.name}_SIZE);
-    in.setBitPosition(m_${field.name}_PREPEND);
     m_${field.name}_READER(in);
 }
 </#macro>
