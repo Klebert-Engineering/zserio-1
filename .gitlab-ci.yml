@@ -1,0 +1,15 @@
+image: registry.gitlab.0xdead.de/nds/afw/afw-builder-ubuntu18:latest
+
+before_script:
+  - apt install -y ant
+
+build:core_cpp:
+  stage: build
+  tags:
+    - linux
+  script:
+    - rm -rf ${CI_PROJECT_DIR}/build
+    - ${CI_PROJECT_DIR}/script/build.sh ant_task core cpp zserio
+  artifacts:
+    paths:
+      - build/zserio/zserio.jar
