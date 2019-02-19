@@ -9,7 +9,7 @@ build:core_cpp:
     - linux
   script:
     - rm -rf ${CI_PROJECT_DIR}/build
-    - ${CI_PROJECT_DIR}/script/build.sh ant_task core cpp zserio
+    - ${CI_PROJECT_DIR}/scripts/build.sh ant_task core cpp zserio
   artifacts:
     paths:
       - build/zserio/zserio.jar
