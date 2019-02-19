@@ -75,6 +75,7 @@ commandDeclaration
     :   constDeclaration |
         subtypeDeclaration |
         structureDeclaration |
+        topicDeclaration |
         choiceDeclaration |
         unionDeclaration |
         enumDeclaration |
@@ -112,6 +113,21 @@ subtypeDeclaration
                                         currentPackage.setLocalType((BaseTokenAST)i, subtype);
                                     }
         )
+    ;
+
+topicDeclaration
+    : #(t:TOPIC i:ID 
+                                    {
+                                        final TopicType topicType = (TopicType)t;
+                                        currentPackage.setLocalType((BaseTokenAST)i, topicType);
+                                        topicType.setPackage(currentPackage);
+                                        currentScope = topicType.getScope();
+                                        currentScope.setSymbol((BaseTokenAST)i, t);
+                                    }
+          a:STRING_LITERAL b:definedType
+       )                            {
+                                        currentScope = defaultScope;
+                                   }
     ;
 
 /**

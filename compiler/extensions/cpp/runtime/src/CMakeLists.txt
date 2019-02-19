@@ -27,6 +27,8 @@ cmake_minimum_required(VERSION 2.8.12.2)
 
 project(ZserioCppRuntime)
 
+set(ZSERIO_CXX_STANDARD 98)
+
 if (DEFINED ZSERIO_RUNTIME_INCLUDE_INSPECTOR)
     set(ZSERIO_RUNTIME_INCLUDE_INSPECTOR_DEFAULT ${ZSERIO_RUNTIME_INCLUDE_INSPECTOR})
 else ()
@@ -75,6 +77,31 @@ set(ZSERIO_CPP_RUNTIME_LIB_SRCS
     zserio/VarUInt64Util.cpp
     zserio/VarUInt64Util.h
 )
+
+if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_MQTT)
+    set(ZSERIO_CPP_RUNTIME_LIB_SRCS
+	${ZSERIO_CPP_RUNTIME_LIB_SRCS}
+        zserio/MqttPubSubClient.cpp
+        zserio/MqttPubSubClient.h
+    )
+endif ()
+
+if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_ROS)
+    set(ZSERIO_CPP_RUNTIME_LIB_SRCS 
+        ${ZSERIO_CPP_RUNTIME_LIB_SRCS}
+        zserio/RosPubSubClient.cpp
+        zserio/RosPubSubClient.h
+    )
+endif ()
+
+if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_MQTT OR ZSERIO_RUNTIME_INCLUDE_PUBSUB_ROS)
+    set(ZSERIO_CPP_RUNTIME_LIB_SRCS
+	${ZSERIO_CPP_RUNTIME_LIB_SRCS}
+        zserio/PubSubClient.h
+        zserio/Topic.cpp
+        zserio/Topic.h
+    )
+endif ()
 
 if (ZSERIO_RUNTIME_INCLUDE_INSPECTOR)
     set(ZSERIO_CPP_RUNTIME_LIB_SRCS

@@ -107,6 +107,7 @@ tokens
     SUBTYPE="subtype"<AST=zserio.ast.Subtype>;
     SUM="sum"<AST=zserio.ast.Expression>;
     TILDE<AST=zserio.ast.Expression>;
+    TOPIC="topic"<AST=zserio.ast.TopicType>;
     TRANSLATION_UNIT<AST=zserio.ast.TranslationUnit>;
     TYPEREF<AST=zserio.ast.TypeReference>;
     UINT16="uint16"<AST=zserio.ast.StdIntegerType>;
@@ -172,6 +173,7 @@ importDeclaration
 commandDeclaration
     :   constDeclaration SEMICOLON! |
         subtypeDeclaration SEMICOLON! |
+        topicDeclaration SEMICOLON! |
         structureDeclaration SEMICOLON! |
         choiceDeclaration SEMICOLON! |
         unionDeclaration SEMICOLON! |
@@ -193,6 +195,15 @@ constDeclaration
  */
 subtypeDeclaration
     :   SUBTYPE^ definedType ID
+    ;
+
+topicDeclaration
+    :   TOPIC^ ID
+        LPAREN!
+        STRING_LITERAL
+        COMMA!
+        definedType
+        RPAREN!
     ;
 
 /**

@@ -11,6 +11,7 @@ import zserio.ast.SqlDatabaseType;
 import zserio.ast.SqlTableType;
 import zserio.ast.StructureType;
 import zserio.ast.Subtype;
+import zserio.ast.TopicType;
 import zserio.ast.TranslationUnit;
 import zserio.ast.UnionType;
 
@@ -62,4 +63,10 @@ public abstract class DefaultEmitter implements Emitter
 
     @Override
     public void beginService(ServiceType service) throws ZserioEmitException {}
+
+    @Override
+    public void beginTopic(TopicType t) throws ZserioEmitException {}
+
+    @Override
+    public void endTopic(TopicType t) throws ZserioEmitException {}
 }
