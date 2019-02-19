@@ -793,6 +793,7 @@ ${I}m_${field.name} = <#if field.initializer??>${field.initializer}<#else>${fiel
 ${I}m_objectChoice(_other.m_objectChoice)
     <#else>
 <#if field.isComplexExternal>
+${I}m_${field.name}_SIZE(_other.m_${field.name}_SIZE),
 ${I}m_${field.name}_WRITER(_other.m_${field.name}_WRITER),
 ${I}m_${field.name}_READER(_other.m_${field.name}_READER),
 ${I}m_${field.name}_BITSIZEOF(_other.m_${field.name}_BITSIZEOF),
