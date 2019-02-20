@@ -17,6 +17,9 @@
 <#if withInspectorCode>
 #include <zserio/inspector/BlobInspectorTreeUtil.h>
 </#if>
+<#if hasExternals>
+#include <algorithm>
+</#if>
 <@system_includes cppSystemIncludes, false/>
 
 #include "<@include_path package.path, "${name}.h"/>"

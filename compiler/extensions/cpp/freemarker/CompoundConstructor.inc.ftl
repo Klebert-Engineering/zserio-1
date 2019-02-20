@@ -91,6 +91,17 @@ ${compoundConstructorsData.compoundName}::${compoundConstructorsData.compoundNam
 </#macro>
 
 <#macro compound_copy_initialization compoundConstructorsData>
+    <#list compoundConstructorsData.fieldList as field>
+        <#if field.isComplexExternal>
+    if (_other.m_${field.name}_BUFFER) 
+    {
+        auto _${field.name}_bytes = m_${field.name}_SIZE/8 + (m_${field.name}_SIZE%8 != 0 ? 1 : 0);
+        m_${field.name}_BUFFER = (uint8_t*)malloc(_${field.name}_bytes);
+        std::copy(_other.m_${field.name}_BUFFER, _other.m_${field.name}_BUFFER + _${field.name}_bytes,
+                    m_${field.name}_BUFFER);
+    }
+        </#if>
+    </#list>
     <#if needs_compound_initialization(compoundConstructorsData)>
     if (_other.m_isInitialized)
         initialize(<@compound_initialize_copy_argument_list compoundConstructorsData/>);

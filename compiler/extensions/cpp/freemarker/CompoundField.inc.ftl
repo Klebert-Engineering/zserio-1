@@ -63,10 +63,10 @@ ${I}    m_${field.name}_SIZE = skip;
 ${I}    size_t bufferSize = m_${field.name}_SIZE / 8 + ((m_${field.name}_SIZE % 8) > 0 ? 1 : 0);
 ${I}    m_${field.name}_BUFFER = static_cast<uint8_t*>(malloc(bufferSize * sizeof(uint8_t)));
 ${I}    zserio::BitStreamWriter writer(m_${field.name}_BUFFER, bufferSize);
-${I}    constexpr auto junkSize = 32;
-${I}    for (auto i=0; i<(skip/junkSize); ++i)
-${I}        writer.writeBits(_in.readBits(junkSize), junkSize);
-${I}    writer.writeBits(_in.readBits(skip%junkSize), skip%junkSize);
+${I}    constexpr auto chunkSize = 32;
+${I}    for (auto i=0; i<(skip/chunkSize); ++i)
+${I}        writer.writeBits(_in.readBits(chunkSize), chunkSize);
+${I}    writer.writeBits(_in.readBits(skip%chunkSize), skip%chunkSize);
 ${I}}
     <#elseif field.array?? || field.compound??>
 ${I}m_${field.name}.read(${constructorArguments});
@@ -158,9 +158,22 @@ ${I}m_${field.name}_INITIALIZE(<#rt>
 <#list field.externalParameters as parameter>m_${parameter.name}<#if parameter_has_next>, </#if><#t>
 </#list>);
 </#if>
-${I}if (!m_${field.name}_WRITER)
-${I}    throw zserio::CppRuntimeException("External write-function not registered!");
-${I}m_${field.name}_WRITER(_out, _preWriteAction);
+${I}if (!m_${field.name}_WRITER) 
+${I}{
+${I}    if (!m_${field.name}_BUFFER)
+${I}        throw zserio::CppRuntimeException("External write-function not registered!");
+${I}
+${I}    constexpr auto chunkSize = 32;
+${I}    for (auto i=0; i<(m_${field.name}_SIZE/chunkSize); ++i)
+${I}        _out.writeBits(m_${field.name}_BUFFER[i*(chunkSize/8)], chunkSize);
+${I}
+${I}    if (m_${field.name}_SIZE%chunkSize) {
+${I}        _out.writeBits(m_${field.name}_BUFFER[((m_${field.name}_SIZE/chunkSize)-1)*(chunkSize/8)+1],
+${I}                       m_${field.name}_SIZE%chunkSize);
+${I}    }
+${I}}
+${I}else
+${I}    m_${field.name}_WRITER(_out, _preWriteAction);
     <#else>
 ${I}<@compound_get_field field/>.write(_out, zserio::NO_PRE_WRITE_ACTION);
     </#if>
@@ -552,16 +565,24 @@ ${I}_endBitPosition += ${field.bitSizeValue};
 ${I}_endBitPosition += zserio::getBitSizeOf${field.runtimeFunction.suffix}(<@compound_get_field field/>);
     <#elseif field.isComplexExternal>
 ${I}_endBitPosition = zserio::alignTo(64, _endBitPosition);
-${I}if (!m_${field.name}_BITSIZEOF)
-${I}    throw zserio::CppRuntimeException("External bitSizeOf-function not registered!");
 ${I}size_t _${field.name}_SKIP = 8;
 ${I}size_t _${field.name}_SIZE = 0;
-${I}while (true)
+${I}if (!m_${field.name}_BITSIZEOF)
 ${I}{
-${I}    _${field.name}_SIZE = m_${field.name}_BITSIZEOF(_endBitPosition + _${field.name}_SKIP);
-${I}    if (zserio::getBitSizeOfVarUInt(_${field.name}_SIZE) == _${field.name}_SKIP)
-${I}        break;
-${I}    _${field.name}_SKIP += 8;
+${I}    if (!m_${field.name}_BUFFER)
+${I}        throw zserio::CppRuntimeException("External bitSizeOf-function not registered!");
+${I}    _${field.name}_SKIP = zserio::getBitSizeOfVarUInt(m_${field.name}_SIZE);
+${I}    _${field.name}_SIZE = m_${field.name}_SIZE;
+${I}}
+${I}else
+${I}{
+${I}    while (true)
+${I}    {
+${I}        _${field.name}_SIZE = m_${field.name}_BITSIZEOF(_endBitPosition + _${field.name}_SKIP);
+${I}        if (zserio::getBitSizeOfVarUInt(_${field.name}_SIZE) == _${field.name}_SKIP)
+${I}            break;
+${I}        _${field.name}_SKIP += 8;
+${I}    }
 ${I}}
 ${I}_endBitPosition += _${field.name}_SKIP;
 ${I}_endBitPosition += _${field.name}_SIZE;
@@ -584,20 +605,27 @@ ${I}_endBitPosition += ${field.bitSizeValue};
 ${I}_endBitPosition += zserio::getBitSizeOf${field.runtimeFunction.suffix}(<@compound_get_field field/>);
     <#elseif field.isComplexExternal>
 ${I}_endBitPosition = zserio::alignTo(64, _endBitPosition);
-${I}if (!m_${field.name}_BITSIZEOF)
-${I}    throw zserio::CppRuntimeException("External bitSizeOf-function not registered!");
-${I}if (!m_${field.name}_INITIALIZEOFFSET)
-${I}    throw zserio::CppRuntimeException("External initializeOffsets-function not registered!");
 ${I}size_t _${field.name}_SKIP = 8;
-${I}while (true)
+${I}if (!m_${field.name}_BITSIZEOF || !m_${field.name}_INITIALIZEOFFSET)
 ${I}{
-${I}    m_${field.name}_SIZE = m_${field.name}_BITSIZEOF(_endBitPosition + _${field.name}_SKIP);
-${I}    if (zserio::getBitSizeOfVarUInt(m_${field.name}_SIZE) == _${field.name}_SKIP)
-${I}        break;
-${I}    _${field.name}_SKIP += 8;
+${I}    if (!m_${field.name}_BUFFER)
+${I}        throw zserio::CppRuntimeException("External bitSizeOf-function and/or initalizeOffsets-function"
+${I}                                          " not registered.");
+${I}    _endBitPosition += zserio::getBitSizeOfVarUInt(m_${field.name}_SIZE);
+${I}    _endBitPosition += m_${field.name}_SIZE;
 ${I}}
-${I}_endBitPosition += _${field.name}_SKIP;
-${I}_endBitPosition = m_${field.name}_INITIALIZEOFFSET(_endBitPosition);
+${I}else
+${I}{
+${I}    while (true)
+${I}    {
+${I}        m_${field.name}_SIZE = m_${field.name}_BITSIZEOF(_endBitPosition + _${field.name}_SKIP);
+${I}        if (zserio::getBitSizeOfVarUInt(m_${field.name}_SIZE) == _${field.name}_SKIP)
+${I}            break;
+${I}        _${field.name}_SKIP += 8;
+${I}    }
+${I}    _endBitPosition += _${field.name}_SKIP;
+${I}    _endBitPosition = m_${field.name}_INITIALIZEOFFSET(_endBitPosition);
+${I}}
     <#else>
 ${I}_endBitPosition = <@compound_get_field field/>.initializeOffsets(_endBitPosition);
     </#if>
@@ -765,6 +793,7 @@ ${I}m_${field.name} = <#if field.initializer??>${field.initializer}<#else>${fiel
 ${I}m_objectChoice(_other.m_objectChoice)
     <#else>
 <#if field.isComplexExternal>
+${I}m_${field.name}_SIZE(_other.m_${field.name}_SIZE),
 ${I}m_${field.name}_WRITER(_other.m_${field.name}_WRITER),
 ${I}m_${field.name}_READER(_other.m_${field.name}_READER),
 ${I}m_${field.name}_BITSIZEOF(_other.m_${field.name}_BITSIZEOF),
