@@ -117,10 +117,10 @@ public class TokenAST extends BaseTokenAST
 
         // check for unused doc comments
         final CommonHiddenStreamToken hiddenLexerToken = getHiddenBefore();
-        if (hiddenLexerToken != null && hiddenLexerToken.getType() == ZserioParserTokenTypes.DOC_COMMENT &&
-            !isDocCommentUsed)
-            ZserioToolPrinter.printWarning(hiddenLexerToken.getFilename(), hiddenLexerToken.getLine(),
-                                           hiddenLexerToken.getColumn(), "Documentation comment is not used!");
+//        if (hiddenLexerToken != null && hiddenLexerToken.getType() == ZserioParserTokenTypes.DOC_COMMENT &&
+//            !isDocCommentUsed)
+//            ZserioToolPrinter.printWarning(hiddenLexerToken.getFilename(), hiddenLexerToken.getLine(),
+//                                           hiddenLexerToken.getColumn(), "Documentation comment is not used!");
     }
 
     /**
