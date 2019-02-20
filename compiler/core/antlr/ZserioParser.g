@@ -108,6 +108,7 @@ tokens
     SUM="sum"<AST=zserio.ast.Expression>;
     TILDE<AST=zserio.ast.Expression>;
     TOPIC="topic"<AST=zserio.ast.TopicType>;
+    TEMPLATE_PARAMETER<AST=zserio.ast.TemplateParameter>;
     TRANSLATION_UNIT<AST=zserio.ast.TranslationUnit>;
     TYPEREF<AST=zserio.ast.TypeReference>;
     UINT16="uint16"<AST=zserio.ast.StdIntegerType>;
@@ -210,10 +211,21 @@ topicDeclaration
  * structureDeclaration.
  */
 structureDeclaration
-    :   STRUCTURE^ ID (parameterList)?
+    :   STRUCTURE^ ID (templateParameterList)? (parameterList)?
         LCURLY!
         structureMemberList
         RCURLY!
+    ;
+
+templateParameterList
+    : LT! templateParameter (COMMA! templateParameter)* GT!
+    ;
+
+templateParameter!
+    :   (i:ID)
+        {
+            #templateParameter = #([TEMPLATE_PARAMETER], i);
+        }
     ;
 
 structureMemberList
@@ -482,7 +494,8 @@ rpcDeclaration
  * definedType.
  */
 definedType
-    :   typeSymbol |
+    :   templateSymbol |
+        typeSymbol |
         builtinType
     ;
 
@@ -490,6 +503,13 @@ typeSymbol
     :   ID (DOT! ID)*
         {
             #typeSymbol = #([TYPEREF], #typeSymbol);
+        }
+    ;
+
+templateSymbol
+    :   (LT! ID GT!)
+        {
+            #templateSymbol = #([TEMPLATE_PARAMETER], #templateSymbol);
         }
     ;
 

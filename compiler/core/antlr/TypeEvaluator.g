@@ -142,6 +142,7 @@ structureDeclaration
                                         currentScope = structureType.getScope();
                                         fillExpressionScopes = true;
                                     }
+            (templateParameterList)?
             (parameterList)?
             (structureFieldDefinition)*
             (functionDefinition)*
@@ -150,6 +151,14 @@ structureDeclaration
                                         expressionScopes.clear();
                                         fillExpressionScopes = false;
                                     }
+    ;
+
+templateParameterList
+    : (templateParameter)+
+    ;
+
+templateParameter
+    :   #(t:TEMPLATE_PARAMETER i:ID)
     ;
 
 structureFieldDefinition
@@ -440,7 +449,8 @@ rpcDeclaration
  * definedType.
  */
 definedType
-    :   typeSymbol |
+    :   templateSymbol |
+        typeSymbol |
         builtinType
     ;
 
@@ -448,6 +458,13 @@ typeSymbol
     :   #(t:TYPEREF ID (DOT ID)*)
         {
             currentPackage.addTypeReferenceToResolve((TypeReference)t);
+        }
+    ;
+
+templateSymbol
+    :   #(t:TEMPLATE_PARAMETER ID)
+        {
+            //currentPackage.addTypeReferenceToIgnore((TypeReference)t);
         }
     ;
 

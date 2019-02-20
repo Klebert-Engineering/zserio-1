@@ -276,6 +276,12 @@ public abstract class CompoundType extends TokenAST implements ZserioScopedType,
         fields.add(field);
     }
 
+    protected void addTemplateParameter(TemplateParameter templateParameter)
+    {
+	templateParameter.setCompoundType(this);
+	templateParameters.add(templateParameter);
+    }
+
     protected void addParameter(Parameter parameter)
     {
         parameters.add(parameter);
@@ -407,6 +413,7 @@ public abstract class CompoundType extends TokenAST implements ZserioScopedType,
     private String name;
 
     private final List<Field> fields = new ArrayList<Field>();
+    private final List<TemplateParameter> templateParameters = new ArrayList<TemplateParameter>();
     private final List<Parameter> parameters = new ArrayList<Parameter>();
     private final List<FunctionType> functions = new ArrayList<FunctionType>();
 

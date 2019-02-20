@@ -83,7 +83,15 @@ topicDeclaration
  * structureDeclaration.
  */
 structureDeclaration
-    :   #(STRUCTURE ID (parameterList)? (structureFieldDefinition)* (functionDefinition)*)
+    :   #(STRUCTURE ID (templateParameterList)? (parameterList)? (structureFieldDefinition)* (functionDefinition)*)
+    ;
+
+templateParameterList
+    : (templateParameter)+
+    ;
+
+templateParameter
+    :   #(t:TEMPLATE_PARAMETER i:ID)
     ;
 
 structureFieldDefinition
@@ -259,12 +267,17 @@ rpcDeclaration
  * definedType.
  */
 definedType
-    :   typeSymbol |
+    :   templateSymbol |
+        typeSymbol |
         builtinType
     ;
 
 typeSymbol
     :   #(TYPEREF ID (DOT ID)*)
+    ;
+
+templateSymbol
+    :   #(TEMPLATE_PARAMETER ID)
     ;
 
 builtinType

@@ -33,6 +33,12 @@ public class StructureType extends CompoundType
             setName(child.getText());
             break;
 
+        case ZserioParserTokenTypes.TEMPLATE_PARAMETER:
+            if (!(child instanceof TemplateParameter))
+                return false;
+            addTemplateParameter((TemplateParameter)child);
+            break;
+
         case ZserioParserTokenTypes.PARAM:
             if (!(child instanceof Parameter))
                 return false;
