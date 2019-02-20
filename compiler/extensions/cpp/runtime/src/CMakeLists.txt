@@ -29,6 +29,9 @@ project(ZserioCppRuntime)
 
 set(ZSERIO_CXX_STANDARD 98)
 
+option(ZSERIO_RUNTIME_INCLUDE_PUBSUB_ROS "Include support for ROS PubSub system." OFF)
+option(ZSERIO_RUNTIME_INCLUDE_PUBSUB_MQTT "Include support for MQTT PubSub system." OFF)
+
 if (DEFINED ZSERIO_RUNTIME_INCLUDE_INSPECTOR)
     set(ZSERIO_RUNTIME_INCLUDE_INSPECTOR_DEFAULT ${ZSERIO_RUNTIME_INCLUDE_INSPECTOR})
 else ()
@@ -129,3 +132,13 @@ add_library(ZserioCppRuntime STATIC ${ZSERIO_CPP_RUNTIME_LIB_SRCS})
 
 target_include_directories(ZserioCppRuntime PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
+if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_ROS)
+    find_package (catkin COMPONENTS roscpp REQUIRED)
+    target_link_libraries(ZserioCppRuntime PUBLIC ${catkin_LIBRARIES})
+    set(ZSERIO_CXX_STANDARD 11)
+endif ()
+
+if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_MQTT)
+    target_link_libraries(ZserioCppRuntime PUBLIC paho-mqtt3a)
+    set(ZSERIO_CXX_STANDARD 11)
+endif()
