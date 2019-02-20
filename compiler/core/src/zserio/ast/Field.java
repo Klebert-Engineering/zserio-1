@@ -92,6 +92,11 @@ public class Field extends TokenAST
         return isAutoOptional || optionalClauseExpr != null;
     }
 
+    public boolean getIsTemplateSymbol()
+    {
+        return isTemplateSymbol;
+    }
+
     public boolean getIsExternal()
     {
         return isExternal;
@@ -316,6 +321,10 @@ public class Field extends TokenAST
             fieldType = (ZserioType)child;
             break;
 
+        case ZserioParserTokenTypes.TEMPLATE_SYMBOL:
+            isTemplateSymbol = true;
+            break;
+
         default:
             if (fieldType != null || !(child instanceof ZserioType))
                 return false;
@@ -432,6 +441,7 @@ public class Field extends TokenAST
     private String name = null;
     private boolean isAutoOptional = false;
     private boolean isExternal = false;
+    private boolean isTemplateSymbol = false;
     private Expression initializerExpr = null;
     private Expression optionalClauseExpr = null;
     private Expression constraintExpr = null;

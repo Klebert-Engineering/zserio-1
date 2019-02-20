@@ -256,7 +256,7 @@ public abstract class CompoundType extends TokenAST implements ZserioScopedType,
     {
         for (Field field : fields)
         {
-            if (field.getIsExternal())
+            if (field.getIsExternal() || field.getIsTemplateSymbol())
                 continue;
 
             final ZserioType usedType = TypeReference.resolveType(field.getFieldReferencedType());

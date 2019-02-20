@@ -277,7 +277,7 @@ typeSymbol
     ;
 
 templateSymbol
-    :   #(TEMPLATE_PARAMETER ID)
+    :   #(TEMPLATE_SYMBOL ID)
     ;
 
 builtinType

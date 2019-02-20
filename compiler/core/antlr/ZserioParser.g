@@ -109,6 +109,7 @@ tokens
     TILDE<AST=zserio.ast.Expression>;
     TOPIC="topic"<AST=zserio.ast.TopicType>;
     TEMPLATE_PARAMETER<AST=zserio.ast.TemplateParameter>;
+    TEMPLATE_SYMBOL<AST=zserio.ast.TemplateSymbol>;
     TRANSLATION_UNIT<AST=zserio.ast.TranslationUnit>;
     TYPEREF<AST=zserio.ast.TypeReference>;
     UINT16="uint16"<AST=zserio.ast.StdIntegerType>;
@@ -509,7 +510,7 @@ typeSymbol
 templateSymbol
     :   (LT! ID GT!)
         {
-            #templateSymbol = #([TEMPLATE_PARAMETER], #templateSymbol);
+            #templateSymbol = #([TEMPLATE_SYMBOL], #templateSymbol);
         }
     ;
 
@@ -587,6 +588,7 @@ parameterDefinition
  */
 typeReference
     :   builtinType |
+        templateSymbol |
         (
             typeSymbol
             (

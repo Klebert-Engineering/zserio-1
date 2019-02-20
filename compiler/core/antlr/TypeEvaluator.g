@@ -462,7 +462,7 @@ typeSymbol
     ;
 
 templateSymbol
-    :   #(t:TEMPLATE_PARAMETER ID)
+    :   #(t:TEMPLATE_SYMBOL ID)
         {
             //currentPackage.addTypeReferenceToIgnore((TypeReference)t);
         }
