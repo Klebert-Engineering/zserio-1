@@ -295,6 +295,7 @@ fieldOffsetRule!
 fieldTypeId!
     :   (m:IMPLICIT)?
         t:typeReference
+        (p:templateParameterList)?
         i:ID
         (
             {#m != null}? (n:fieldArrayRange { #t = #([ARRAY], t, n, m); }) |
@@ -302,7 +303,7 @@ fieldTypeId!
         )
         {
             // create only 2 AST siblings t and i without any AST parent
-            #fieldTypeId = #(null, t, i);
+            #fieldTypeId = #(null, t, p, i);
         }
     ;
     exception
@@ -511,6 +512,13 @@ templateSymbol
     :   (LT! ID GT!)
         {
             #templateSymbol = #([TEMPLATE_SYMBOL], #templateSymbol);
+        }
+    ;
+
+templateParameterSymbol
+    :   (i:ID p:templateParameterList)
+        {
+            #templateParameterSymbol = #([TEMPLATE_PARAMETER], i, p);
         }
     ;
 

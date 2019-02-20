@@ -43,6 +43,9 @@ public class TemplateParameter extends TokenAST
 
         switch (child.getType())
         {
+        case ZserioParserTokenTypes.TEMPLATE_PARAMETER:
+            break;
+
         case ZserioParserTokenTypes.ID:
             name = child.getText();
             break;
@@ -58,8 +61,8 @@ public class TemplateParameter extends TokenAST
     protected void check() throws ParserException
     {
         // check field name
-        if (compoundType.getPackage().getVisibleType(this, PackageName.EMPTY, getName()) != null)
-            throw new ParserException(this, "'" + getName() + "' is a defined type in this package!");
+        //if (compoundType.getPackage().getVisibleType(this, PackageName.EMPTY, getName()) != null)
+        //    throw new ParserException(this, "'" + getName() + "' is a defined type in this package!");
     }
 
     /**

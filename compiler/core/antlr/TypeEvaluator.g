@@ -164,6 +164,7 @@ templateParameter
 structureFieldDefinition
     :   #(f:FIELD
             (externalTypeReference | typeReference | a:fieldArrayType)
+            (templateParameterList)?
             i:ID
             (OPTIONAL)?
             (fieldInitializer)?
@@ -463,9 +464,6 @@ typeSymbol
 
 templateSymbol
     :   #(t:TEMPLATE_SYMBOL ID)
-        {
-            //currentPackage.addTypeReferenceToIgnore((TypeReference)t);
-        }
     ;
 
 builtinType
@@ -530,7 +528,7 @@ parameterList
     ;
 
 parameterDefinition
-    :   #(p:PARAM definedType i:ID)
+    :   #(p:PARAM definedType (templateParameterList)? i:ID)
         {
             currentScope.setSymbol((BaseTokenAST)i, p);
         }

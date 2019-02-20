@@ -325,6 +325,9 @@ public class Field extends TokenAST
             isTemplateSymbol = true;
             break;
 
+        case ZserioParserTokenTypes.TEMPLATE_PARAMETER:
+            break;
+
         default:
             if (fieldType != null || !(child instanceof ZserioType))
                 return false;

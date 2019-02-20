@@ -169,6 +169,10 @@ public class TypeInstantiation extends TokenAST implements ZserioType
             referencedType = (TypeReference)child;
             break;
 
+        case ZserioParserTokenTypes.TEMPLATE_PARAMETER:
+            // TODO
+            break;
+
         default:
             if (!(child instanceof Expression))
                 return false;

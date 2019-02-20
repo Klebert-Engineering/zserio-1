@@ -95,7 +95,7 @@ templateParameter
     ;
 
 structureFieldDefinition
-    :   #(FIELD (externalTypeReference | typeReference | fieldArrayType) ID (OPTIONAL)? (fieldInitializer)? (fieldOptionalClause)?
+    :   #(FIELD (externalTypeReference | typeReference | fieldArrayType) (templateParameterList)? ID (OPTIONAL)? (fieldInitializer)? (fieldOptionalClause)?
                 (fieldConstraint)? (fieldOffset)? (fieldAlignment)?)
     ;
 
@@ -350,7 +350,7 @@ parameterList
     ;
 
 parameterDefinition
-    :   #(PARAM definedType ID)
+    :   #(PARAM definedType (templateParameterList)? ID)
     ;
 
 /**
@@ -362,7 +362,7 @@ typeReference
     ;
 
 paramTypeInstantiation
-    :   #(i:INST definedType typeArgumentList)
+    :   #(i:INST definedType (templateParameterList)? typeArgumentList)
         {
             // evaluate base type
             ((TypeInstantiation)i).evaluateBaseType();
