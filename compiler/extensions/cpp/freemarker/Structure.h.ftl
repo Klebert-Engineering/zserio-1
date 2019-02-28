@@ -23,7 +23,7 @@
 
 <@user_includes headerUserIncludes, true/>
 <@namespace_begin package.path/>
-
+<@compound_template_usage_clause/>
 class ${name}
 {
 public:
@@ -121,5 +121,7 @@ ${parameter.cppType} ${parameter.name}<#if parameter_has_next>, </#if><#t>
 };
 
 <@namespace_end package.path/>
+
+<#if isTemplate>#include "${name}.cpp"</#if>
 
 <@include_guard_end package.path, name/>

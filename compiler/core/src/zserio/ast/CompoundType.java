@@ -127,6 +127,11 @@ public abstract class CompoundType extends TokenAST implements ZserioScopedType,
         return functions;
     }
 
+    public List<TemplateParameter> getTemplateParameters()
+    {
+        return templateParameters;
+    }
+
     /**
      * Checks if this compound type contains itself as an optional none array field.
      *

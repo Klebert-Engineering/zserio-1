@@ -16,6 +16,15 @@ ${I}}
     </#if>
 </#macro>
 
+
+
+<#macro compound_template_usage_clause>
+<#if isTemplate>template <<#list templateParameters as tparam>class ${tparam}<#if tparam_has_next>,</#if></#list>></#if>
+</#macro>
+
+<#macro compound_type_specifier compoundName>
+${compoundName}<#if isTemplate><<#list templateParameters as tparam>${tparam}<#if tparam_has_next>,</#if></#list>></#if></#macro>
+
 <#macro compound_read_field_inner field compoundName indent>
     <#local I>${""?left_pad(indent * 4)}</#local>
     <@compound_read_field_prolog field, compoundName, indent/>
@@ -678,7 +687,8 @@ ${parameter.cppType} ${parameter.name}<#if parameter_has_next>, </#if><#t>
 
 <#macro compound_field_getter_definition field compoundName returnFieldMacroName>
     <#if field.withWriterCode && !field.isSimpleType>
-${field.cppTypeName}& ${compoundName}::${field.getterName}()
+<@compound_template_usage_clause/>
+${field.cppTypeName}& <@compound_type_specifier compoundName/>::${field.getterName}()
 {
 <@.vars[returnFieldMacroName] field/>
 }
@@ -687,28 +697,33 @@ ${field.cppTypeName}& ${compoundName}::${field.getterName}()
 </#macro>
 
 <#macro compound_external_field_accessors_definition field compoundName>
-void ${compoundName}::${field.setterName}Reader(std::function<void(zserio::BitStreamReader&)> f)
+<@compound_template_usage_clause/>
+void <@compound_type_specifier compoundName/>::${field.setterName}Reader(std::function<void(zserio::BitStreamReader&)> f)
 {
     m_${field.name}_READER = f;
 }
 
-void ${compoundName}::${field.setterName}Writer(std::function<void(zserio::BitStreamWriter&, zserio::PreWriteAction _preWriteAction)> f)
+<@compound_template_usage_clause/>
+void <@compound_type_specifier compoundName/>::${field.setterName}Writer(std::function<void(zserio::BitStreamWriter&, zserio::PreWriteAction _preWriteAction)> f)
 {
     m_${field.name}_WRITER = f;
 }
 
-void ${compoundName}::${field.setterName}BitSizeOf(std::function<size_t(size_t _bitPosition)> f)
+<@compound_template_usage_clause/>
+void <@compound_type_specifier compoundName/>::${field.setterName}BitSizeOf(std::function<size_t(size_t _bitPosition)> f)
 {
     m_${field.name}_BITSIZEOF = f;
 }
 
-void ${compoundName}::${field.setterName}InitOffset(std::function<size_t(size_t _bitPosition)> f)
+<@compound_template_usage_clause/>
+void <@compound_type_specifier compoundName/>::${field.setterName}InitOffset(std::function<size_t(size_t _bitPosition)> f)
 {
     m_${field.name}_INITIALIZEOFFSET = f;
 }
 
 <#if field.externalParameters?has_content>
-void ${compoundName}::${field.setterName}Initialize(std::function<void(<#rt>
+<@compound_template_usage_clause/>
+void <@compound_type_specifier compoundName/>::${field.setterName}Initialize(std::function<void(<#rt>
 <#list field.externalParameters as parameter><#t>
 ${parameter.cppType} ${parameter.name}<#if parameter_has_next>, </#if><#t>
 </#list>)> f)
@@ -717,7 +732,8 @@ ${parameter.cppType} ${parameter.name}<#if parameter_has_next>, </#if><#t>
 }
 </#if>
 
-void ${compoundName}::${field.name}Read()
+<@compound_template_usage_clause/>
+void <@compound_type_specifier compoundName/>::${field.name}Read()
 {
     if (!m_${field.name}_READER)
         throw zserio::CppRuntimeException("External reader-function not registered!");
@@ -731,7 +747,8 @@ void ${compoundName}::${field.name}Read()
 </#macro>
 
 <#macro compound_field_const_getter_definition field compoundName returnFieldMacroName>
-${field.cppArgumentTypeName} ${compoundName}::${field.getterName}() const
+<@compound_template_usage_clause/>
+${field.cppArgumentTypeName} <@compound_type_specifier compoundName/>::${field.getterName}() const
 {
 <@.vars[returnFieldMacroName] field/>
 }
@@ -740,7 +757,8 @@ ${field.cppArgumentTypeName} ${compoundName}::${field.getterName}() const
 <#macro compound_field_setter_definition field compoundName setFieldMacroName>
     <#if field.withWriterCode>
 
-void ${compoundName}::${field.setterName}(${field.cppArgumentTypeName} ${field.name})
+<@compound_template_usage_clause/>
+void <@compound_type_specifier compoundName/>::${field.setterName}(${field.cppArgumentTypeName} ${field.name})
 {
 <@.vars[setFieldMacroName] field/>
 }
