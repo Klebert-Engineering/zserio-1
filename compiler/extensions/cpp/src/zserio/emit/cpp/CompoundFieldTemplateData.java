@@ -3,7 +3,6 @@ package zserio.emit.cpp;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.LinkedList;
 
 import zserio.ast.ArrayType;
 import zserio.ast.UnionType;
@@ -36,6 +35,8 @@ public class CompoundFieldTemplateData
             IncludeCollector includeCollector, boolean withWriterCode) throws ZserioEmitException
     {
         isExternal = field.getIsExternal();
+        isTemplate = field.getIsTemplateSymbol();
+
         final ZserioType fieldType = TypeReference.resolveType(field.getFieldType());
         final ZserioType baseFieldType = TypeReference.resolveBaseType(fieldType);
         optional = createOptional(field, cppExpressionFormatter);
@@ -49,7 +50,7 @@ public class CompoundFieldTemplateData
             includeCollector.addHeaderIncludesForType(fieldNativeType);
             cppTypeName = fieldNativeType.getFullName();
             cppArgumentTypeName = fieldNativeType.getArgumentTypeName();
-            zserioTypeName = ZserioTypeUtil.getFullName(fieldType);
+            zserioTypeName = isTemplate ? fieldType.getName() : ZserioTypeUtil.getFullName(fieldType);
             isSimpleType = fieldNativeType.isSimpleType();
             isEnum = fieldNativeType instanceof NativeEnumType;
             array = createArray(fieldNativeType, baseFieldType, parentType, cppNativeTypeMapper,
@@ -722,4 +723,5 @@ public class CompoundFieldTemplateData
     private final boolean                       withWriterCode;
     private final boolean                       isExternal;
     private final boolean                       isComplexExternal;
+    private final boolean                       isTemplate;
 }
