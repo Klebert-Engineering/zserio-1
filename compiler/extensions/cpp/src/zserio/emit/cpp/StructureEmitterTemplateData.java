@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import zserio.ast.StructureType;
+import zserio.ast.TemplateParameter;
 import zserio.emit.common.ZserioEmitException;
 
 public class StructureEmitterTemplateData extends CompoundTypeTemplateData
@@ -13,6 +14,13 @@ public class StructureEmitterTemplateData extends CompoundTypeTemplateData
     {
         super(context, structureType);
 
+        templateParameters = new ArrayList<String>();
+        for (TemplateParameter tparam: structureType.getTemplateParameters())
+        {
+            templateParameters.add(tparam.getName());
+        }
+        isTemplate = (templateParameters.size() > 0);
+
         nonOptionalSimpleFieldList = new ArrayList<CompoundFieldTemplateData>();
         for (CompoundFieldTemplateData fieldTemplateData : getFieldList())
         {
@@ -21,10 +29,23 @@ public class StructureEmitterTemplateData extends CompoundTypeTemplateData
         }
     }
 
+    public boolean getIsTemplate()
+    {
+        return isTemplate;
+    }
+
+    public Iterable<String> getTemplateParameters()
+    {
+        return templateParameters;
+    }
+
     public Iterable<CompoundFieldTemplateData> getNonOptionalSimpleFieldList()
     {
         return nonOptionalSimpleFieldList;
     }
 
     private final List<CompoundFieldTemplateData>   nonOptionalSimpleFieldList;
+    private boolean                                 isTemplate;
+    private final List<String>                      templateParameters;
 }
+
