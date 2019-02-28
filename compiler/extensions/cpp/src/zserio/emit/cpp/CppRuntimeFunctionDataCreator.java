@@ -1,29 +1,6 @@
 package zserio.emit.cpp;
 
-import zserio.ast.ArrayType;
-import zserio.ast.UnionType;
-import zserio.ast.BitFieldType;
-import zserio.ast.BooleanType;
-import zserio.ast.ChoiceType;
-import zserio.ast.ConstType;
-import zserio.ast.ZserioType;
-import zserio.ast.ZserioTypeVisitor;
-import zserio.ast.EnumType;
-import zserio.ast.FloatType;
-import zserio.ast.FunctionType;
-import zserio.ast.ServiceType;
-import zserio.ast.TopicType;
-import zserio.ast.StructureType;
-import zserio.ast.SignedBitFieldType;
-import zserio.ast.SqlDatabaseType;
-import zserio.ast.SqlTableType;
-import zserio.ast.StdIntegerType;
-import zserio.ast.StringType;
-import zserio.ast.Subtype;
-import zserio.ast.TypeInstantiation;
-import zserio.ast.TypeReference;
-import zserio.ast.UnsignedBitFieldType;
-import zserio.ast.VarIntegerType;
+import zserio.ast.*;
 import zserio.emit.common.ExpressionFormatter;
 import zserio.emit.common.ZserioEmitException;
 
@@ -210,6 +187,9 @@ public class CppRuntimeFunctionDataCreator
 
             templateData = new RuntimeFunctionTemplateData(sb.toString());
         }
+
+        @Override
+        public void visitTemplateSymbol(TemplateSymbol type) { /* Nothing */ }
 
         private void handleBitFieldType(BitFieldType type)
         {

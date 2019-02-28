@@ -321,11 +321,13 @@ public class Field extends TokenAST
             fieldType = (ZserioType)child;
             break;
 
-        case ZserioParserTokenTypes.TEMPLATE_SYMBOL:
-            isTemplateSymbol = true;
-            break;
 
         case ZserioParserTokenTypes.TEMPLATE_PARAMETER:
+            break;
+
+        case ZserioParserTokenTypes.TEMPLATE_SYMBOL:
+            isTemplateSymbol = true;
+            fieldType = (ZserioType)child;
             break;
 
         default:
