@@ -16,8 +16,6 @@ ${I}}
     </#if>
 </#macro>
 
-
-
 <#macro compound_template_usage_clause>
 <#if isTemplate>template <<#list templateParameters as tparam>class ${tparam}<#if tparam_has_next>,</#if></#list>></#if>
 </#macro>
