@@ -17,11 +17,11 @@ ${I}}
 </#macro>
 
 <#macro compound_template_usage_clause>
-<#if isTemplate>template <<#list templateParameters as tparam>class ${tparam}<#if tparam_has_next>,</#if></#list>></#if>
+<#if isTemplate>template <<#list templateParameters as tparam>class ${tparam?replace(".","::")}<#if tparam_has_next>,</#if></#list>></#if>
 </#macro>
 
 <#macro compound_type_specifier compoundName>
-${compoundName}<#if isTemplate><<#list templateParameters as tparam>${tparam}<#if tparam_has_next>,</#if></#list>></#if></#macro>
+${compoundName}<#if isTemplate><<#list templateParameters as tparam>${tparam?replace(".","::")}<#if tparam_has_next>,</#if></#list>></#if></#macro>
 
 <#macro compound_read_field_inner field compoundName indent>
     <#local I>${""?left_pad(indent * 4)}</#local>

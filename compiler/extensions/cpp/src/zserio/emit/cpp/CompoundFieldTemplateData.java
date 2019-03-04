@@ -40,14 +40,18 @@ public class CompoundFieldTemplateData
             List<TemplateParameter> fieldTParams = field.getTemplateParameters();
             if (!fieldTParams.isEmpty())
             {
+                ArrayList<String> templateIncludes = new ArrayList<String>();
                 templateSuffix += "<";
                 for (int i=0; i<fieldTParams.size(); i++)
                 {
-                    templateSuffix += fieldTParams.get(i).getName();
+                    String templateTypeId = fieldTParams.get(i).getName();
+                    templateIncludes.add(templateTypeId.replace(".", "/") + ".h");
+                    templateSuffix += templateTypeId.replace(".","::");
                     if (i<(fieldTParams.size()-1))
                         templateSuffix += ", ";
                 }
                 templateSuffix += ">";
+                includeCollector.addHeaderUserIncludes(templateIncludes);
             }
 
             cppTypeName = fieldNativeType.getFullName() + templateSuffix;
@@ -557,7 +561,7 @@ public class CompoundFieldTemplateData
                 templateSuffix += "<";
                 for (int i=0; i<fieldTParams.size(); i++)
                 {
-                    templateSuffix += fieldTParams.get(i).getName();
+                    templateSuffix += fieldTParams.get(i).getName().replace(".", "::");
                     if (i<(fieldTParams.size()-1))
                         templateSuffix += ", ";
                 }
