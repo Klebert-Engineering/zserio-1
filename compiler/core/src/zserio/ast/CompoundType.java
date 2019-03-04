@@ -283,8 +283,8 @@ public abstract class CompoundType extends TokenAST implements ZserioScopedType,
 
     protected void addTemplateParameter(TemplateParameter templateParameter)
     {
-	templateParameter.setCompoundType(this);
-	templateParameters.add(templateParameter);
+        templateParameter.setCompoundType(this);
+        templateParameters.add(templateParameter);
     }
 
     protected void addParameter(Parameter parameter)

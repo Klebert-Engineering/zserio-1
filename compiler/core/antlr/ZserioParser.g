@@ -223,10 +223,14 @@ templateParameterList
     ;
 
 templateParameter!
-    :   (i:ID)
+    :   t:templateTypeId 
         {
-            #templateParameter = #([TEMPLATE_PARAMETER], i);
+            #templateParameter = #([TEMPLATE_PARAMETER], t);
         }
+    ;
+
+templateTypeId
+    : ID (DOT! ID)* 
     ;
 
 structureMemberList

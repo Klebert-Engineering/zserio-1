@@ -47,7 +47,8 @@ public class TemplateParameter extends TokenAST
             break;
 
         case ZserioParserTokenTypes.ID:
-            name = child.getText();
+            name += (name.length() > 0 ? SEPARATOR : "") + child.getText();
+            reference = new SymbolReference(this, name);
             break;
 
         default:
@@ -81,5 +82,6 @@ public class TemplateParameter extends TokenAST
 
     private CompoundType compoundType = null;
     private ZserioType fieldType = null;
-    private String name = null;
+    private String name = "";
+    private SymbolReference reference = null;
 }
