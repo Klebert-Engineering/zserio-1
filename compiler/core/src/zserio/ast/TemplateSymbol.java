@@ -5,6 +5,9 @@ import zserio.antlr.ZserioParserTokenTypes;
 import zserio.antlr.util.BaseTokenAST;
 import zserio.antlr.util.ParserException;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * AST node for template parameters.
  */
@@ -34,13 +37,21 @@ public class TemplateSymbol extends CompoundType
         return name;
     }
 
+    public List<String> getTypeArguments()
+    {
+        return typeArguments;
+    }
+
     @Override
     protected boolean evaluateChild(BaseTokenAST child) throws ParserException
     {
         switch (child.getType())
         {
         case ZserioParserTokenTypes.ID:
-            name = child.getText();
+            if (name.length() == 0)
+                name = child.getText();
+            else
+                typeArguments.add(child.getText());
             break;
 
         default:
@@ -54,5 +65,6 @@ public class TemplateSymbol extends CompoundType
 
     private static final long serialVersionUID = 4009186108710189367L;
 
-    private String name = null;
+    private String name = "";
+    private List<String> typeArguments = new ArrayList<String>();
 }

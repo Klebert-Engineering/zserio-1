@@ -513,7 +513,7 @@ typeSymbol
     ;
 
 templateSymbol
-    :   (LT! ID GT!)
+    :   (LT! ID GT! (typeArgumentList)?)
         {
             #templateSymbol = #([TEMPLATE_SYMBOL], #templateSymbol);
         }
