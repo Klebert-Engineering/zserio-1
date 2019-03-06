@@ -4,7 +4,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+import antlr.Token;
+import zserio.antlr.util.BaseTokenAST;
 import zserio.ast.*;
+import zserio.ast.Package;
 import zserio.ast.TypeInstantiation.InstantiatedParameter;
 import zserio.emit.common.ExpressionFormatter;
 import zserio.emit.common.ZserioEmitException;
@@ -287,9 +290,21 @@ public class CompoundFieldTemplateData
     public static class Compound
     {
         public Compound(CppNativeTypeMapper cppNativeTypeMapper, CompoundType owner,
-                CompoundType compoundFieldType, boolean withWriterCode)
-        {
-            instantiatedParameters = new ArrayList<InstantiatedParameterData>(0);
+                CompoundType compoundFieldType, boolean withWriterCode,ExpressionFormatter cppExpressionFormatter,
+                ExpressionFormatter cppIndirectExpressionFormatter) throws ZserioEmitException {
+            if (compoundFieldType instanceof TemplateSymbol) {
+               TemplateSymbol s = (TemplateSymbol)  compoundFieldType;
+               List<String> args = s.getTypeArguments();
+               instantiatedParameters = new ArrayList<InstantiatedParameterData>(args.size());
+               for (String paramNam : args)
+               {
+                   // TODO Fix this quick hack that fakes presence of specific tokens to support argumentlist
+                   instantiatedParameters.add(new InstantiatedParameterData("m_" + paramNam + ".get()"));
+               }
+            }
+            else
+                instantiatedParameters = new ArrayList<InstantiatedParameterData>(0);
+
             needsChildrenInitialization = compoundFieldType.needsChildrenInitialization();
         }
 
@@ -328,6 +343,12 @@ public class CompoundFieldTemplateData
                 final Expression argumentExpression = instantiatedParameter.getArgumentExpression();
                 expression = cppExpressionFormatter.formatGetter(argumentExpression);
                 indirectExpression = cppIndirectExpressionFormatter.formatGetter(argumentExpression);
+            }
+
+            public InstantiatedParameterData(String expr)
+            {
+                expression = expr;
+                indirectExpression = expr;
             }
 
             public String getExpression()
@@ -701,7 +722,8 @@ public class CompoundFieldTemplateData
             CompoundType owner, ZserioType baseFieldType, boolean withWriterCode) throws ZserioEmitException
     {
         if (baseFieldType instanceof CompoundType)
-            return new Compound(cppNativeTypeMapper, owner, (CompoundType)baseFieldType, withWriterCode);
+            return new Compound(cppNativeTypeMapper, owner, (CompoundType)baseFieldType, withWriterCode, cppExpressionFormatter,
+                    cppIndirectExpressionFormatter);
         else if (baseFieldType instanceof TypeInstantiation)
             return new Compound(cppNativeTypeMapper, cppExpressionFormatter, cppIndirectExpressionFormatter,
                     owner, (TypeInstantiation)baseFieldType, withWriterCode);
