@@ -134,13 +134,13 @@
 </#macro>
 
 <#macro compound_assignment_operator_declaration compoundConstructorsData>
-    ${compoundConstructorsData.compoundName}& operator=(const ${compoundConstructorsData.compoundName}& _other);
+   <@compound_type_specifier compoundConstructorsData.compoundName/>& operator=(const <@compound_type_specifier compoundConstructorsData.compoundName/>& _other);
 </#macro>
 
 <#macro compound_assignment_operator_definition compoundConstructorsData>
 <@compound_template_usage_clause/>
-${compoundConstructorsData.compoundName}& <@compound_type_specifier compoundConstructorsData.compoundName/>::operator=(<#rt>
-    <#lt>const ${compoundConstructorsData.compoundName}& _other)
+<@compound_type_specifier compoundConstructorsData.compoundName/>& <@compound_type_specifier compoundConstructorsData.compoundName/>::operator=(<#rt>
+    <#lt>const <@compound_type_specifier compoundConstructorsData.compoundName/>& _other)
 {
     <#list compoundConstructorsData.fieldList as field>
         <@compound_assignment_field field, 1/>
