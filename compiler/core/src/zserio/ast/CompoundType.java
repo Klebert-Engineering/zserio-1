@@ -132,6 +132,16 @@ public abstract class CompoundType extends TokenAST implements ZserioScopedType,
         return templateParameters;
     }
 
+    public boolean isTemplateParameterId(String cand)
+    {
+        for (TemplateParameter t: templateParameters)
+        {
+            if (t.getName().equals(cand))
+                return true;
+        }
+        return false;
+    }
+
     /**
      * Checks if this compound type contains itself as an optional none array field.
      *

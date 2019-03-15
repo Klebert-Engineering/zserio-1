@@ -48,7 +48,8 @@ public class CompoundFieldTemplateData
                 for (int i=0; i<fieldTParams.size(); i++)
                 {
                     String templateTypeId = fieldTParams.get(i).getName();
-                    templateIncludes.add(templateTypeId.replace(".", "/") + ".h");
+                    if (!parentType.isTemplateParameterId(templateTypeId))
+                        templateIncludes.add(templateTypeId.replace(".", "/") + ".h");
                     templateSuffix += templateTypeId.replace(".","::");
                     if (i<(fieldTParams.size()-1))
                         templateSuffix += ", ";
