@@ -16,9 +16,15 @@ ${I}}
     </#if>
 </#macro>
 
+<#macro non_const_argument_type_name constArgTypeName>
+${constArgTypeName?replace("const ", "")}</#macro>
+
 <#macro compound_template_usage_clause>
 <#if isTemplate??><#if isTemplate>template <<#list templateParameters as tparam>class ${tparam?replace(".","::")}<#if tparam_has_next>,</#if></#list>></#if></#if>
 </#macro>
+
+<#macro compound_template_paramlist>
+<#if isTemplate??><#if isTemplate><<#list templateParameters as tparam>${tparam?replace(".","::")}<#if tparam_has_next>,</#if></#list>></#if></#if></#macro>
 
 <#macro compound_type_specifier compoundName>
 ${compoundName}<#if isTemplate??><#if isTemplate><<#list templateParameters as tparam>${tparam?replace(".","::")}<#if tparam_has_next>,</#if></#list>></#if></#if></#macro>
@@ -478,10 +484,12 @@ private:
         <@compound_field_compound_ctor_params field.array.elementCompound, true/><#t>
     </#if>
 </#local>
+
+<@compound_template_usage_clause/>
 class <@element_factory_name compoundName, field.name/>
 {
 public:
-    explicit <@element_factory_name compoundName, field.name/>(${compoundName}& owner) : m_owner(owner) {}
+    explicit <@element_factory_name compoundName, field.name/>(${compoundName}<@compound_template_paramlist/>& owner) : m_owner(owner) {}
 
     void create(void* storage, zserio::BitStreamReader& _in, size_t _index)
     {
@@ -498,12 +506,12 @@ public:
 
     </#if>
 private:
-    ${compoundName}& m_owner;
+    ${compoundName}<@compound_template_paramlist/>& m_owner;
 };
 </#macro>
 
 <#macro element_initializer_name compoundName fieldName>
-    _elementInitializer_${compoundName}_${fieldName}<#t>
+    _elementInitializer_${compoundName}_${fieldName}<@compound_template_paramlist/><#t>
 </#macro>
 
 <#macro define_element_initializer compoundName field>
@@ -528,6 +536,7 @@ private:
 </#macro>
 
 <#macro define_element_children_initializer compoundName field>
+<@compound_template_usage_clause/>
 class <@element_children_initializer_name compoundName, field.name/>
 {
 public:
@@ -545,7 +554,7 @@ public:
 </#macro>
 
 <#macro array_element_factory compoundName field>
-    <#if field.array?? && field.array.requiresElementFactory>, <@element_factory_name compoundName, field.name/>(*this)</#if><#t>
+    <#if field.array?? && field.array.requiresElementFactory>, <@element_factory_name compoundName, field.name/><@compound_template_paramlist/>(*this)</#if><#t>
 </#macro>
 
 <#macro array_element_bit_size array>
@@ -641,7 +650,7 @@ ${I}_endBitPosition = <@compound_get_field field/>.initializeOffsets(_endBitPosi
 <#macro compound_field_accessors_declaration field>
     <#if field.withWriterCode && !field.isSimpleType>
         <#-- non-const getter is neccessary for setting of offsets -->
-    ${field.cppTypeName}& ${field.getterName}();
+    <@non_const_argument_type_name field.cppArgumentTypeName/> ${field.getterName}();
     </#if>
     ${field.cppArgumentTypeName} ${field.getterName}() const;
     <#if field.withWriterCode>
@@ -686,7 +695,7 @@ ${parameter.cppType} ${parameter.name}<#if parameter_has_next>, </#if><#t>
 <#macro compound_field_getter_definition field compoundName returnFieldMacroName>
     <#if field.withWriterCode && !field.isSimpleType>
 <@compound_template_usage_clause/>
-${field.cppTypeName}& <@compound_type_specifier compoundName/>::${field.getterName}()
+<@non_const_argument_type_name field.cppArgumentTypeName/> <@compound_type_specifier compoundName/>::${field.getterName}()
 {
 <@.vars[returnFieldMacroName] field/>
 }
@@ -858,10 +867,10 @@ ${I}m_${field.name} = _other.m_${field.name};
     <#elseif field.array?? && field.array.elementCompound??>
         <#if needs_compound_field_initialization(field.array.elementCompound)>
             <#local initializeCommand><@compound_get_field field/>.initializeElements(<#rt>
-                <#lt><@element_initializer_name compoundName, field.name/>(*this));</#local>
+                <#lt><@element_initializer_name compoundName, field.name/><@compound_template_paramlist/>(*this));</#local>
         <#elseif field.array.elementCompound.needsChildrenInitialization>
             <#local initializeCommand><@compound_get_field field/>.initializeElements(<#rt>
-                <#lt><@element_children_initializer_name compoundName, field.name/>());</#local>
+                <#lt><@element_children_initializer_name compoundName, field.name/><@compound_template_paramlist/>());</#local>
         </#if>
     <#elseif field.isComplexExternal>
 ${I}if (!m_${field.name}_BITSIZEOF)
