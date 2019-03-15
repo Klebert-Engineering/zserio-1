@@ -693,7 +693,7 @@ public class CppNativeTypeMapper
             final PackageName packageName = cppPackageMapper.getPackageName(type);
             final String name = type.getName();
             final String includeFileName = getIncludePath(packageName, name);
-            cppType = new NativeCompoundType(packageName, name, includeFileName);
+            cppType = new NativeCompoundType(packageName, name, includeFileName, type.getTemplateParameters());
         }
 
         private CppNativeType cppType = null;
