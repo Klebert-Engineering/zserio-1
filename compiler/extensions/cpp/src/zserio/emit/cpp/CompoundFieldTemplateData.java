@@ -11,11 +11,7 @@ import zserio.ast.Package;
 import zserio.ast.TypeInstantiation.InstantiatedParameter;
 import zserio.emit.common.ExpressionFormatter;
 import zserio.emit.common.ZserioEmitException;
-import zserio.emit.cpp.types.CppNativeType;
-import zserio.emit.cpp.types.NativeArrayType;
-import zserio.emit.cpp.types.NativeEnumType;
-import zserio.emit.cpp.types.NativeIntegralType;
-import zserio.emit.cpp.types.NativeOptionalHolderType;
+import zserio.emit.cpp.types.*;
 
 public class CompoundFieldTemplateData
 {
@@ -58,14 +54,18 @@ public class CompoundFieldTemplateData
                 includeCollector.addHeaderUserIncludes(templateIncludes);
             }
 
-            cppTypeName = fieldNativeType.getFullName() + templateSuffix;
-            if (!fieldTParams.isEmpty())
-            {
-                String typeArgNam = fieldNativeType.getArgumentTypeName();
-                cppArgumentTypeName = typeArgNam.substring(0, typeArgNam.length()-1) + templateSuffix + "&";
+            if (!(fieldNativeType instanceof NativeObjectArrayType)) {
+                cppTypeName = fieldNativeType.getFullName() + templateSuffix;
+                if (!fieldTParams.isEmpty()) {
+                    String typeArgNam = fieldNativeType.getArgumentTypeName();
+                    cppArgumentTypeName = typeArgNam.substring(0, typeArgNam.length() - 1) + templateSuffix + "&";
+                }
+                else
+                    cppArgumentTypeName = fieldNativeType.getArgumentTypeName();
             }
             else
             {
+                cppTypeName = fieldNativeType.getFullName();
                 cppArgumentTypeName = fieldNativeType.getArgumentTypeName();
             }
 
@@ -492,7 +492,12 @@ public class CompoundFieldTemplateData
             length = createLength(baseType, cppExpressionFormatter);
             indirectLength = createLength(baseType, cppIndirectExpressionFormatter);
             elementZserioTypeName = ZserioTypeUtil.getFullName(elementType);
-            elementCppTypeName = nativeType.getElementType().getFullName();
+
+            String suffix = "";
+            if (nativeType.getElementType() instanceof NativeCompoundType)
+                suffix = ((NativeCompoundType) nativeType.getElementType()).getTypeSuffix();
+
+            elementCppTypeName = nativeType.getElementType().getFullName() + suffix;
             requiresElementBitSize = nativeType.requiresElementBitSize();
             requiresElementFactory = nativeType.requiresElementFactory();
             elementBitSizeValue = createBitSizeValue(elementType, cppExpressionFormatter);
