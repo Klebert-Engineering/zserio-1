@@ -300,7 +300,9 @@ public class CompoundFieldTemplateData
                for (String paramNam : args)
                {
                    // TODO Fix this quick hack that fakes presence of specific tokens to support argumentlist
-                   instantiatedParameters.add(new InstantiatedParameterData("m_" + paramNam + ".get()"));
+
+                   instantiatedParameters.add(new InstantiatedParameterData("get" + paramNam.substring(0,1).toUpperCase() +
+                                                                                     paramNam.substring(1) + "()"));
                }
             }
             else
