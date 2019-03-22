@@ -22,27 +22,42 @@ public class ServiceEmitter extends CppDefaultEmitter
         if (!getWithGrpcCode() && !getWithUriServiceCode())
             return;
 
-        generateServiceInterface();
+        generateServiceInterface(serviceType);
 
         if (getWithUriServiceCode())
-            generateUriServiceSources();
+            generateUriServiceSources(serviceType);
 
         if (getWithGrpcCode())
-            generateGrpcServiceSources();
+            generateGrpcServiceSources(serviceType);
     }
 
-    private void generateServiceInterface()
+    class ServiceInterfaceTemplateData extends ServiceEmitterTemplateData
     {
-        // TODO
+        public ServiceInterfaceTemplateData(TemplateDataContext context, ServiceType serviceType)
+                throws ZserioEmitException
+        {
+            super(context, serviceType);
+        }
+
+        @Override
+        public String getName() { return "I" + super.getName(); }
     }
 
-    private void generateGrpcServiceSources() throws ZserioEmitException
+    private void generateServiceInterface(ServiceType serviceType) throws ZserioEmitException
     {
         final TemplateDataContext templateDataContext = getTemplateDataContext();
         final ServiceEmitterTemplateData templateData =
-                new ServiceEmitterTemplateData(templateDataContext, serviceType);
-        processSourceTemplate(TEMPLATE_SOURCE_NAME, templateData, serviceType);
-        processHeaderTemplate(TEMPLATE_HEADER_NAME, templateData, serviceType);
+            new ServiceInterfaceTemplateData(templateDataContext, serviceType);
+        processHeaderTemplate(TEMPLATE_ISERVICE_SOURCE_NAME, templateData, serviceType.getPackage().getPackageName(), templateData.getName());
+    }
+
+    private void generateGrpcServiceSources(ServiceType serviceType) throws ZserioEmitException
+    {
+        final TemplateDataContext templateDataContext = getTemplateDataContext();
+        final ServiceEmitterTemplateData templateData =
+            new ServiceEmitterTemplateData(templateDataContext, serviceType);
+        processSourceTemplate(TEMPLATE_GRPC_SOURCE_NAME, templateData, serviceType);
+        processHeaderTemplate(TEMPLATE_GRPC_HEADER_NAME, templateData, serviceType);
 
         addRpcTypes(serviceType.getRpcList());
     }
@@ -61,13 +76,16 @@ public class ServiceEmitter extends CppDefaultEmitter
         }
     }
 
-    private void generateUriServiceSources()
+    private void generateUriServiceSources(ServiceType serviceType)
     {
         // TODO
     }
 
-    private static final String TEMPLATE_SOURCE_NAME = "Service.cpp.ftl";
-    private static final String TEMPLATE_HEADER_NAME = "Service.h.ftl";
-
-    private final Set<CompoundType> rpcTypes = new TreeSet<CompoundType>();
+    private static final String TEMPLATE_ISERVICE_SOURCE_NAME = "IService.h.ftl";
+    private static final String TEMPLATE_GRPC_SOURCE_NAME = "Service.cpp.ftl";
+    private static final String TEMPLATE_GRPC_HEADER_NAME = "Service.h.ftl";
+    private static final String TRAITS_TEMPLATE_HEADER_NAME = "GrpcSerializationTraits.h.ftl";
+    private static final String TRAITS_OUTPUT_FILE_NAME_ROOT = "GrpcSerializationTraits";
+	
+	private final Set<CompoundType> rpcTypes = new TreeSet<CompoundType>();
 }
