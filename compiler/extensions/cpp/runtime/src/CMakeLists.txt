@@ -29,6 +29,7 @@ project(ZserioCppRuntime)
 
 set(ZSERIO_CXX_STANDARD 98)
 
+option(ZSERIO_RUNTIME_INCLUDE_RPC_CURL "Include support for CURL-based URL RPC sub-system." OFF)
 option(ZSERIO_RUNTIME_INCLUDE_PUBSUB_ROS "Include support for ROS PubSub system." OFF)
 option(ZSERIO_RUNTIME_INCLUDE_PUBSUB_MQTT "Include support for MQTT PubSub system." OFF)
 
@@ -81,9 +82,17 @@ set(ZSERIO_CPP_RUNTIME_LIB_SRCS
     zserio/VarUInt64Util.h
 )
 
+if (ZSERIO_RUNTIME_INCLUDE_RPC_CURL)
+    set(ZSERIO_CPP_RUNTIME_LIB_SRCS
+        ${ZSERIO_CPP_RUNTIME_LIB_SRCS}
+        zserio/UrlClient.cpp
+        zserio/UrlClient.h
+    )
+endif ()
+
 if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_MQTT)
     set(ZSERIO_CPP_RUNTIME_LIB_SRCS
-	${ZSERIO_CPP_RUNTIME_LIB_SRCS}
+	    ${ZSERIO_CPP_RUNTIME_LIB_SRCS}
         zserio/MqttPubSubClient.cpp
         zserio/MqttPubSubClient.h
     )
@@ -99,7 +108,7 @@ endif ()
 
 if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_MQTT OR ZSERIO_RUNTIME_INCLUDE_PUBSUB_ROS)
     set(ZSERIO_CPP_RUNTIME_LIB_SRCS
-	${ZSERIO_CPP_RUNTIME_LIB_SRCS}
+	    ${ZSERIO_CPP_RUNTIME_LIB_SRCS}
         zserio/PubSubClient.h
         zserio/Topic.cpp
         zserio/Topic.h
@@ -131,6 +140,12 @@ endif ()
 add_library(ZserioCppRuntime STATIC ${ZSERIO_CPP_RUNTIME_LIB_SRCS})
 
 target_include_directories(ZserioCppRuntime PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+if (ZSERIO_RUNTIME_INCLUDE_RPC_CURL)
+    find_package (CURL REQUIRED)
+    target_link_libraries(ZserioCppRuntime PUBLIC ${CURL_LIBRARIES})
+    set(ZSERIO_CXX_STANDARD 11)
+endif ()
 
 if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_ROS)
     find_package (catkin COMPONENTS roscpp REQUIRED)
