@@ -35,9 +35,27 @@ public class ServiceEmitter extends CppDefaultEmitter
             generateGrpcServiceSources();
     }
 
-    private void generateServiceInterface()
+    class ServiceInterfaceTemplateData extends ServiceEmitterTemplateData
     {
-        // TODO
+        public ServiceInterfaceTemplateData(TemplateDataContext context, ServiceType serviceType)
+                throws ZserioEmitException
+        {
+            super(context, serviceType);
+        }
+
+        @Override
+        public String getName() { return "I" + super.getName(); }
+    }
+
+    private void generateServiceInterface() throws ZserioEmitException
+    {
+        final TemplateDataContext templateDataContext = getTemplateDataContext();
+        for (ServiceType serviceType : serviceTypes)
+        {
+            final ServiceEmitterTemplateData templateData =
+                    new ServiceInterfaceTemplateData(templateDataContext, serviceType);
+            processHeaderTemplate(TEMPLATE_ISERVICE_SOURCE_NAME, templateData, serviceType, templateData.getName());
+        }
     }
 
     private void generateGrpcServiceSources() throws ZserioEmitException
@@ -47,8 +65,8 @@ public class ServiceEmitter extends CppDefaultEmitter
         {
             final ServiceEmitterTemplateData templateData =
                     new ServiceEmitterTemplateData(templateDataContext, serviceType);
-            processSourceTemplate(TEMPLATE_SOURCE_NAME, templateData, serviceType);
-            processHeaderTemplate(TEMPLATE_HEADER_NAME, templateData, serviceType);
+            processSourceTemplate(TEMPLATE_GRPC_SOURCE_NAME, templateData, serviceType);
+            processHeaderTemplate(TEMPLATE_GRPC_HEADER_NAME, templateData, serviceType);
         }
 
         final GrpcSerializationTraitsTemplateData traitsTemplateData =
@@ -63,9 +81,10 @@ public class ServiceEmitter extends CppDefaultEmitter
         // TODO
     }
 
-    private static final String TEMPLATE_SOURCE_NAME = "Service.cpp.ftl";
-    private static final String TEMPLATE_HEADER_NAME = "Service.h.ftl";
+    private static final String TEMPLATE_ISERVICE_SOURCE_NAME = "IService.h.ftl";
 
+    private static final String TEMPLATE_GRPC_SOURCE_NAME = "Service.cpp.ftl";
+    private static final String TEMPLATE_GRPC_HEADER_NAME = "Service.h.ftl";
     private static final String TRAITS_TEMPLATE_HEADER_NAME = "GrpcSerializationTraits.h.ftl";
     private static final String TRAITS_OUTPUT_FILE_NAME_ROOT = "GrpcSerializationTraits";
 
