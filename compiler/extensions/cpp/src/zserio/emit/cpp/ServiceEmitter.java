@@ -19,9 +19,25 @@ public class ServiceEmitter extends CppDefaultEmitter
     @Override
     public void beginService(ServiceType serviceType) throws ZserioEmitException
     {
-        if (!getWithGrpcCode())
+        if (!getWithGrpcCode() && !getWithUriServiceCode())
             return;
 
+        generateServiceInterface();
+
+        if (getWithUriServiceCode())
+            generateUriServiceSources();
+
+        if (getWithGrpcCode())
+            generateGrpcServiceSources();
+    }
+
+    private void generateServiceInterface()
+    {
+        // TODO
+    }
+
+    private void generateGrpcServiceSources() throws ZserioEmitException
+    {
         final TemplateDataContext templateDataContext = getTemplateDataContext();
         final ServiceEmitterTemplateData templateData =
                 new ServiceEmitterTemplateData(templateDataContext, serviceType);
@@ -43,6 +59,11 @@ public class ServiceEmitter extends CppDefaultEmitter
             rpcTypes.add(rpc.getRequestType());
             rpcTypes.add(rpc.getResponseType());
         }
+    }
+
+    private void generateUriServiceSources()
+    {
+        // TODO
     }
 
     private static final String TEMPLATE_SOURCE_NAME = "Service.cpp.ftl";

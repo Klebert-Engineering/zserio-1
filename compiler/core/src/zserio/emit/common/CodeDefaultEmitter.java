@@ -65,7 +65,7 @@ public abstract class CodeDefaultEmitter extends DefaultEmitter
         return withGrpcCode;
     }
 
-    protected boolean getWithUriSericeCode() {
+    protected boolean getWithUriServiceCode() {
        return withUriServiceCode;
     }
 
