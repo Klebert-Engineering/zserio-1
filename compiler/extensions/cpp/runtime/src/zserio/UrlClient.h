@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace zserio
 {
@@ -13,8 +14,17 @@ class UrlClient
 
 public:
     UrlClient();
+    ~UrlClient();
 
-    std::pair<const uint8_t*, size_t> fetchResource(const std::string& uri);
+    std::vector<uint8_t> fetchResource(const std::string& uri);
+
+    enum Status {
+        Healthy,
+        Error
+    };
+
+    Status status();
+    std::string statusDescription();
 
 private:
     std::unique_ptr<Impl> impl_;
