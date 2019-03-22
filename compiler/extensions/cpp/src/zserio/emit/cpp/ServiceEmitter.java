@@ -47,6 +47,18 @@ public class ServiceEmitter extends CppDefaultEmitter
         public String getName() { return "I" + super.getName(); }
     }
 
+    class UriServiceTemplateData extends ServiceEmitterTemplateData
+    {
+        public UriServiceTemplateData(TemplateDataContext context, ServiceType serviceType)
+                throws ZserioEmitException
+        {
+            super(context, serviceType);
+        }
+
+        @Override
+        public String getName() { return "Uri_" + super.getName(); }
+    }
+
     private void generateServiceInterface() throws ZserioEmitException
     {
         final TemplateDataContext templateDataContext = getTemplateDataContext();
@@ -76,12 +88,22 @@ public class ServiceEmitter extends CppDefaultEmitter
 
     }
 
-    private void generateUriServiceSources()
+    private void generateUriServiceSources() throws ZserioEmitException
     {
-        // TODO
+        final TemplateDataContext templateDataContext = getTemplateDataContext();
+        for (ServiceType serviceType : serviceTypes)
+        {
+            final ServiceEmitterTemplateData templateData =
+                    new UriServiceTemplateData(templateDataContext, serviceType);
+            processSourceTemplate(TEMPLATE_URI_SOURCE_NAME, templateData, serviceType, templateData.getName());
+            processHeaderTemplate(TEMPLATE_URI_HEADER_NAME, templateData, serviceType, templateData.getName());
+        }
     }
 
     private static final String TEMPLATE_ISERVICE_SOURCE_NAME = "IService.h.ftl";
+
+    private static final String TEMPLATE_URI_SOURCE_NAME = "UriService.cpp.ftl";
+    private static final String TEMPLATE_URI_HEADER_NAME = "UriService.h.ftl";
 
     private static final String TEMPLATE_GRPC_SOURCE_NAME = "Service.cpp.ftl";
     private static final String TEMPLATE_GRPC_HEADER_NAME = "Service.h.ftl";
