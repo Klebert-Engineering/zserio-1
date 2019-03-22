@@ -29,6 +29,7 @@ public abstract class CodeDefaultEmitter extends DefaultEmitter
         withSourcesAmalgamation = extensionParameters.getWithSourcesAmalgamation();
         withSqlCode = extensionParameters.getWithSqlCode();
         withGrpcCode = extensionParameters.getWithGrpcCode();
+        withUriServiceCode = extensionParameters.getWithUriServiceCode();
         withValidationCode = extensionParameters.getWithValidationCode();
         withWriterCode = extensionParameters.getWithWriterCode();
 
@@ -70,6 +71,10 @@ public abstract class CodeDefaultEmitter extends DefaultEmitter
     protected boolean getWithGrpcCode()
     {
         return withGrpcCode;
+    }
+
+    protected boolean getWithUriSericeCode() {
+       return withUriServiceCode;
     }
 
     protected boolean getWithValidationCode()
@@ -144,6 +149,7 @@ public abstract class CodeDefaultEmitter extends DefaultEmitter
     private final boolean withSourcesAmalgamation;
     private final boolean withSqlCode;
     private final boolean withGrpcCode;
+    private final boolean withUriServiceCode;
     private final boolean withWriterCode;
 
     private final String codeTemplateLocation;
