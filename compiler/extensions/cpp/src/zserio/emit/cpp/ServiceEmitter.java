@@ -43,12 +43,24 @@ public class ServiceEmitter extends CppDefaultEmitter
         public String getName() { return "I" + super.getName(); }
     }
 
+    class UriServiceTemplateData extends ServiceEmitterTemplateData
+    {
+        public UriServiceTemplateData(TemplateDataContext context, ServiceType serviceType)
+                throws ZserioEmitException
+        {
+            super(context, serviceType);
+        }
+
+        @Override
+        public String getName() { return "Uri_" + super.getName(); }
+    }
+
     private void generateServiceInterface(ServiceType serviceType) throws ZserioEmitException
     {
         final TemplateDataContext templateDataContext = getTemplateDataContext();
         final ServiceEmitterTemplateData templateData =
             new ServiceInterfaceTemplateData(templateDataContext, serviceType);
-        processHeaderTemplate(TEMPLATE_ISERVICE_SOURCE_NAME, templateData, serviceType.getPackage().getPackageName(), templateData.getName());
+        processHeaderTemplate(TEMPLATE_ISERVICE_SOURCE_NAME, templateData, serviceType);
     }
 
     private void generateGrpcServiceSources(ServiceType serviceType) throws ZserioEmitException
@@ -76,12 +88,19 @@ public class ServiceEmitter extends CppDefaultEmitter
         }
     }
 
-    private void generateUriServiceSources(ServiceType serviceType)
+    private void generateUriServiceSources(ServiceType serviceType) throws ZserioEmitException
     {
-        // TODO
+        final TemplateDataContext templateDataContext = getTemplateDataContext();
+        final ServiceEmitterTemplateData templateData =
+            new UriServiceTemplateData(templateDataContext, serviceType);
+        processSourceTemplate(TEMPLATE_URI_SOURCE_NAME, templateData, serviceType);
+        processHeaderTemplate(TEMPLATE_URI_HEADER_NAME, templateData, serviceType);
     }
 
     private static final String TEMPLATE_ISERVICE_SOURCE_NAME = "IService.h.ftl";
+    private static final String TEMPLATE_URI_SOURCE_NAME = "UriService.cpp.ftl";
+    private static final String TEMPLATE_URI_HEADER_NAME = "UriService.h.ftl";
+
     private static final String TEMPLATE_GRPC_SOURCE_NAME = "Service.cpp.ftl";
     private static final String TEMPLATE_GRPC_HEADER_NAME = "Service.h.ftl";
     private static final String TRAITS_TEMPLATE_HEADER_NAME = "GrpcSerializationTraits.h.ftl";
