@@ -23,9 +23,25 @@ public class ServiceEmitter extends CppDefaultEmitter
     @Override
     public void endRoot(Root root) throws ZserioEmitException
     {
-        if (!getWithGrpcCode() || serviceTypes.isEmpty())
+        if (serviceTypes.isEmpty() || (!getWithGrpcCode() && !getWithUriServiceCode()))
             return;
 
+        generateServiceInterface();
+
+        if (getWithUriServiceCode())
+            generateUriServiceSources();
+
+        if (getWithGrpcCode())
+            generateGrpcServiceSources();
+    }
+
+    private void generateServiceInterface()
+    {
+        // TODO
+    }
+
+    private void generateGrpcServiceSources() throws ZserioEmitException
+    {
         final TemplateDataContext templateDataContext = getTemplateDataContext();
         for (ServiceType serviceType : serviceTypes)
         {
@@ -39,6 +55,12 @@ public class ServiceEmitter extends CppDefaultEmitter
                 new GrpcSerializationTraitsTemplateData(templateDataContext, serviceTypes);
         processHeaderTemplateToRootDir(TRAITS_TEMPLATE_HEADER_NAME, traitsTemplateData,
                 TRAITS_OUTPUT_FILE_NAME_ROOT);
+
+    }
+
+    private void generateUriServiceSources()
+    {
+        // TODO
     }
 
     private static final String TEMPLATE_SOURCE_NAME = "Service.cpp.ftl";
