@@ -77,6 +77,9 @@ public interface Parameters
      */
     public boolean getWithGrpcCode();
 
+    /** Gets the Uri Service Code */
+    public boolean getWithUriServiceCode();
+
     /**
      * Gets the include validation flag.
      *

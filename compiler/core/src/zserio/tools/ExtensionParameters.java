@@ -72,6 +72,9 @@ public class ExtensionParameters implements Parameters
     }
 
     @Override
+    public boolean getWithUriServiceCode() { return commandLineArguments.getWithUriServiceCode(); }
+
+    @Override
     public boolean getWithValidationCode()
     {
         return commandLineArguments.getWithValidationCode();
