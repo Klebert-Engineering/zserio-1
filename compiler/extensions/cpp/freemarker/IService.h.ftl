@@ -12,7 +12,7 @@
 class ${name}
 {
 public:
-    ~${name}() = default;
+    virtual ~${name}() = default;
 
     static constexpr char const* service_full_name()
     {
