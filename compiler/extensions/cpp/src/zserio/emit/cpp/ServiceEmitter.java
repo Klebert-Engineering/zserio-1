@@ -27,6 +27,7 @@ public class ServiceEmitter extends CppDefaultEmitter
             return;
 
         generateServiceInterface();
+        generateServiceFactory();
 
         if (getWithUriServiceCode())
             generateUriServiceSources();
@@ -57,6 +58,19 @@ public class ServiceEmitter extends CppDefaultEmitter
 
         @Override
         public String getName() { return "Uri_" + super.getName(); }
+    }
+
+    class ServiceFactoryTemplateData extends ServiceEmitterTemplateData
+    {
+        public ServiceFactoryTemplateData(TemplateDataContext context, ServiceType serviceType) throws ZserioEmitException
+        {
+            super(context, serviceType);
+        }
+
+        @Override
+        public String getName() {
+            return super.getName() + "Factory";
+        }
     }
 
     private void generateServiceInterface() throws ZserioEmitException
@@ -100,7 +114,22 @@ public class ServiceEmitter extends CppDefaultEmitter
         }
     }
 
+    private void generateServiceFactory() throws ZserioEmitException
+    {
+        final TemplateDataContext templateDataContext = getTemplateDataContext();
+        for (ServiceType serviceType : serviceTypes)
+        {
+            final ServiceFactoryTemplateData templateData =
+                    new ServiceFactoryTemplateData(templateDataContext, serviceType);
+            processSourceTemplate(TEMPLATE_SERVICE_FACTORY_SOURCE_NAME,  templateData, serviceType, templateData.getName());
+            processHeaderTemplate(TEMPLATE_SERVICE_FACTORY_HEADER_NAME, templateData, serviceType, templateData.getName());
+        }
+    }
+
     private static final String TEMPLATE_ISERVICE_SOURCE_NAME = "IService.h.ftl";
+
+    private static final String TEMPLATE_SERVICE_FACTORY_SOURCE_NAME = "ServiceFactory.cpp.ftl";
+    private static final String TEMPLATE_SERVICE_FACTORY_HEADER_NAME = "ServiceFactory.h.ftl";
 
     private static final String TEMPLATE_URI_SOURCE_NAME = "UriService.cpp.ftl";
     private static final String TEMPLATE_URI_HEADER_NAME = "UriService.h.ftl";
