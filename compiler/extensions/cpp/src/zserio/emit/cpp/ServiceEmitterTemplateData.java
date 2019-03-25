@@ -2,10 +2,10 @@ package zserio.emit.cpp;
 
 import java.util.List;
 import java.util.ArrayList;
-import zserio.ast.ServiceType;
-import zserio.ast.Rpc;
-import zserio.ast.ZserioType;
+
+import zserio.ast.*;
 import zserio.emit.common.ZserioEmitException;
+import zserio.emit.cpp.types.CppNativeType;
 
 public class ServiceEmitterTemplateData extends UserTypeTemplateData
 {
@@ -63,12 +63,29 @@ public class ServiceEmitterTemplateData extends UserTypeTemplateData
             name = rpc.getName();
 
             final ZserioType responseType = rpc.getResponseType();
-            responseTypeFullName = typeMapper.getCppType(responseType).getFullName();
+            CppNativeType type = typeMapper.getCppType(responseType);
+            responseTypeFullName = type.getFullName();
             hasResponseStreaming = rpc.hasResponseStreaming();
 
             final ZserioType requestType = rpc.getRequestType();
-            requestTypeFullName = typeMapper.getCppType(requestType).getFullName();
+            type = typeMapper.getCppType(requestType);
+            requestTypeFullName = type.getFullName();
             hasRequestStreaming = rpc.hasRequestStreaming();
+
+            if (requestType instanceof TypeReference)
+            {
+               TypeReference tr = (TypeReference)requestType;
+               ZserioType t = tr.getReferencedType();
+               if (t instanceof CompoundType)
+               {
+                   CompoundType c = (CompoundType)t;
+                   for (Field f: c.getFields())
+                   {
+                       requestFieldNames.add(f.getName());
+                   }
+               }
+            }
+
         }
 
         public String getName()
@@ -101,8 +118,14 @@ public class ServiceEmitterTemplateData extends UserTypeTemplateData
             return !hasRequestStreaming && hasResponseStreaming;
         }
 
+        public List<String> getRequestFieldNames()
+        {
+            return requestFieldNames;
+        }
+
         private final String name;
         private final String responseTypeFullName;
+        private final List<String> requestFieldNames = new ArrayList<>();
         private final boolean hasResponseStreaming;
         private final String requestTypeFullName;
         private final boolean hasRequestStreaming;
