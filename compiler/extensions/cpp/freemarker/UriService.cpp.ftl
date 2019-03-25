@@ -1,7 +1,7 @@
 <#include "FileHeader.inc.ftl">
 <@file_header generatorDescription/>
-<@system_includes cppSystemIncludes, false/>
-#include "<@include_path package.path, "${name}.h"/>"
+<@system_includes cppSystemIncludes/>
+<@user_include package.path, "${name}.h"/>
 <@user_includes cppUserIncludes, false/>
 
 <@namespace_begin package.path/>
