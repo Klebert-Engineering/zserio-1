@@ -164,13 +164,14 @@ ${I}    if (!m_${field.name}_BUFFER)
 ${I}        throw zserio::CppRuntimeException("External write-function not registered!");
 ${I}
 ${I}    constexpr auto chunkSize = 32;
-${I}    for (auto i=0; i<(m_${field.name}_SIZE/chunkSize); ++i)
-${I}        _out.writeBits(m_${field.name}_BUFFER[i*(chunkSize/8)], chunkSize);
+${I}    zserio::BitStreamReader reader(m_${field.name}_BUFFER, (m_${field.name}_SIZE+7)/8);  
 ${I}
-${I}    if (m_${field.name}_SIZE%chunkSize) {
-${I}        _out.writeBits(m_${field.name}_BUFFER[((m_${field.name}_SIZE/chunkSize)-1)*(chunkSize/8)+1],
-${I}                       m_${field.name}_SIZE%chunkSize);
-${I}    }
+${I}    for (size_t i=0; i<(m_${field.name}_SIZE/chunkSize); ++i)
+${I}        _out.writeBits(reader.readBits(chunkSize));
+${I}
+${I}    auto numTailBits = static_cast<uint8_t>(m_${field.name}_SIZE%chunkSize);
+${I}    if (numTailBits) 
+${I}        _out.writeBits(reader.readBits(numTailBits), numTailBits); 
 ${I}}
 ${I}else
 ${I}    m_${field.name}_WRITER(_out, _preWriteAction);
