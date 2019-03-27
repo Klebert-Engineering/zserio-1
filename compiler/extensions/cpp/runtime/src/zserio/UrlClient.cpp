@@ -6,6 +6,17 @@
 namespace zserio
 {
 
+template<> std::string to_string<std::string>(const std::string& s) { return s; }
+template<> std::string to_string<int>(const int& val) {return std::to_string(val);}
+template<> std::string to_string<long>(const long& val) {return std::to_string(val);}
+template<> std::string to_string<long long>(const long long& val) {return std::to_string(val);}
+template<> std::string to_string<unsigned>(const unsigned& val) {return std::to_string(val);}
+template<> std::string to_string<unsigned long>(const unsigned long& val) {return std::to_string(val);}
+template<> std::string to_string<unsigned long long>(const unsigned long long& val) {return std::to_string(val);}
+template<> std::string to_string<float>(const float& val) {return std::to_string(val);}
+template<> std::string to_string<double>(const double& val) {return std::to_string(val);}
+template<> std::string to_string<long double>(const long double& val) {return std::to_string(val);}
+
 UrlClient::~UrlClient() = default;
 
 struct UrlClient::Impl
