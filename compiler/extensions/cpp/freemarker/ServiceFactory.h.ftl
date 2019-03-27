@@ -13,8 +13,8 @@
 class ${name}
 {
 public:
-    LayerServiceFactory() = default;
-    ~LayerServiceFactory() = default;
+    ${name}() = default;
+    ~${name}() = default;
     std::unique_ptr<<@service_interface_name name/>> createService(const std::string& host);
 };
 
