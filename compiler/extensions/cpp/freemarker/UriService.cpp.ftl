@@ -5,16 +5,6 @@
 #include <zserio/UrlClient.h>
 <@user_includes cppUserIncludes, false/>
 
-namespace std
-{
-// Just there to support same code for plain number and 
-// string fields
-std::string to_string(const std::string& str)
-{
-    return str;
-}
-}
-
 <@namespace_begin package.path/>
 ${name}::${name}(const std::string& host): host_(host)
 {}
@@ -23,7 +13,7 @@ void ${name}::${rpc.name}(const ${rpc.requestTypeFullName}& request, ${rpc.respo
 {
     std::string uri = host_;
     <#list rpc.requestFieldNames  as name>
-    uri += "/" + std::to_string(request.get${name[0]?upper_case}${name[1..]}());
+    uri += "/" + zserio::to_string(request.get${name[0]?upper_case}${name[1..]}());
     </#list>
     zserio::UrlClient client;
     auto data = client.fetchResource(uri);
