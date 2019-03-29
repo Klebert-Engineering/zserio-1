@@ -249,7 +249,7 @@ class CommandLineArguments
         final OptionGroup uriServiceGroup = new OptionGroup();
         option = new Option(OptionNameWithUriServiceCode, false, "enable code for URI services (default)");
         uriServiceGroup.addOption(option);
-        option = new Option(OptionNameWithUriServiceCode, false, "disable code for URI services" );
+        option = new Option(OptionNameWithoutUriServiceCode, false, "disable code for URI services" );
         uriServiceGroup.addOption(option);
         uriServiceGroup.setRequired(false);
         options.addOptionGroup(uriServiceGroup);
