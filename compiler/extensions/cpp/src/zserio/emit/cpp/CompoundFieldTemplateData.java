@@ -3,30 +3,15 @@ package zserio.emit.cpp;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.LinkedList;
 
-import zserio.ast.ArrayType;
-import zserio.ast.UnionType;
-import zserio.ast.BitFieldType;
-import zserio.ast.ChoiceType;
-import zserio.ast.CompoundType;
-import zserio.ast.Parameter;
-import zserio.ast.ZserioType;
-import zserio.ast.ZserioTypeUtil;
-import zserio.ast.Expression;
-import zserio.ast.Field;
-import zserio.ast.FixedSizeType;
-import zserio.ast.IntegerType;
-import zserio.ast.TypeInstantiation;
+import antlr.Token;
+import zserio.antlr.util.BaseTokenAST;
+import zserio.ast.*;
+import zserio.ast.Package;
 import zserio.ast.TypeInstantiation.InstantiatedParameter;
-import zserio.ast.TypeReference;
 import zserio.emit.common.ExpressionFormatter;
 import zserio.emit.common.ZserioEmitException;
-import zserio.emit.cpp.types.CppNativeType;
-import zserio.emit.cpp.types.NativeArrayType;
-import zserio.emit.cpp.types.NativeEnumType;
-import zserio.emit.cpp.types.NativeIntegralType;
-import zserio.emit.cpp.types.NativeOptionalHolderType;
+import zserio.emit.cpp.types.*;
 
 public class CompoundFieldTemplateData
 {
@@ -36,6 +21,8 @@ public class CompoundFieldTemplateData
             IncludeCollector includeCollector, boolean withWriterCode) throws ZserioEmitException
     {
         isExternal = field.getIsExternal();
+        isTemplate = field.getIsTemplateSymbol();
+
         final ZserioType fieldType = TypeReference.resolveType(field.getFieldType());
         final ZserioType baseFieldType = TypeReference.resolveBaseType(fieldType);
         optional = createOptional(field, cppExpressionFormatter);
@@ -47,16 +34,49 @@ public class CompoundFieldTemplateData
         {
             final CppNativeType fieldNativeType = cppNativeTypeMapper.getCppType(fieldType);
             includeCollector.addHeaderIncludesForType(fieldNativeType);
-            cppTypeName = fieldNativeType.getFullName();
-            cppArgumentTypeName = fieldNativeType.getArgumentTypeName();
-            zserioTypeName = ZserioTypeUtil.getFullName(fieldType);
+
+            String templateSuffix = "";
+            List<TemplateParameter> fieldTParams = field.getTemplateParameters();
+            if (!fieldTParams.isEmpty())
+            {
+                ArrayList<String> templateIncludes = new ArrayList<String>();
+                templateSuffix += "<";
+                for (int i=0; i<fieldTParams.size(); i++)
+                {
+                    String templateTypeId = fieldTParams.get(i).getName();
+                    if (!parentType.isTemplateParameterId(templateTypeId))
+                        templateIncludes.add(templateTypeId.replace(".", "/") + ".h");
+                    templateSuffix += templateTypeId.replace(".","::");
+                    if (i<(fieldTParams.size()-1))
+                        templateSuffix += ", ";
+                }
+                templateSuffix += ">";
+                includeCollector.addHeaderUserIncludes(templateIncludes);
+            }
+
+            if (!(fieldNativeType instanceof NativeObjectArrayType)) {
+                cppTypeName = fieldNativeType.getFullName() + templateSuffix;
+                if (!fieldTParams.isEmpty()) {
+                    String typeArgNam = fieldNativeType.getArgumentTypeName();
+                    cppArgumentTypeName = typeArgNam.substring(0, typeArgNam.length() - 1) + templateSuffix + "&";
+                }
+                else
+                    cppArgumentTypeName = fieldNativeType.getArgumentTypeName();
+            }
+            else
+            {
+                cppTypeName = fieldNativeType.getFullName();
+                cppArgumentTypeName = fieldNativeType.getArgumentTypeName();
+            }
+
+            zserioTypeName = isTemplate ? fieldType.getName() : ZserioTypeUtil.getFullName(fieldType);
             isSimpleType = fieldNativeType.isSimpleType();
             isEnum = fieldNativeType instanceof NativeEnumType;
             array = createArray(fieldNativeType, baseFieldType, parentType, cppNativeTypeMapper,
                 cppExpressionFormatter, cppIndirectExpressionFormatter, withWriterCode);
             final boolean isOptionalField = (optional != null);
             optionalHolder = createOptionalHolder(fieldType, baseFieldType, isOptionalField, cppNativeTypeMapper,
-                    includeCollector);
+                    includeCollector, field.getTemplateParameters());
             isComplexExternal = false;
             externalParameters = null;
         }
@@ -271,9 +291,23 @@ public class CompoundFieldTemplateData
     public static class Compound
     {
         public Compound(CppNativeTypeMapper cppNativeTypeMapper, CompoundType owner,
-                CompoundType compoundFieldType, boolean withWriterCode)
-        {
-            instantiatedParameters = new ArrayList<InstantiatedParameterData>(0);
+                CompoundType compoundFieldType, boolean withWriterCode,ExpressionFormatter cppExpressionFormatter,
+                ExpressionFormatter cppIndirectExpressionFormatter) throws ZserioEmitException {
+            if (compoundFieldType instanceof TemplateSymbol) {
+               TemplateSymbol s = (TemplateSymbol)  compoundFieldType;
+               List<String> args = s.getTypeArguments();
+               instantiatedParameters = new ArrayList<InstantiatedParameterData>(args.size());
+               for (String paramNam : args)
+               {
+                   // TODO Fix this quick hack that fakes presence of specific tokens to support argumentlist
+
+                   instantiatedParameters.add(new InstantiatedParameterData("get" + paramNam.substring(0,1).toUpperCase() +
+                                                                                     paramNam.substring(1) + "()"));
+               }
+            }
+            else
+                instantiatedParameters = new ArrayList<InstantiatedParameterData>(0);
+
             needsChildrenInitialization = compoundFieldType.needsChildrenInitialization();
         }
 
@@ -312,6 +346,12 @@ public class CompoundFieldTemplateData
                 final Expression argumentExpression = instantiatedParameter.getArgumentExpression();
                 expression = cppExpressionFormatter.formatGetter(argumentExpression);
                 indirectExpression = cppIndirectExpressionFormatter.formatGetter(argumentExpression);
+            }
+
+            public InstantiatedParameterData(String expr)
+            {
+                expression = expr;
+                indirectExpression = expr;
             }
 
             public String getExpression()
@@ -454,7 +494,12 @@ public class CompoundFieldTemplateData
             length = createLength(baseType, cppExpressionFormatter);
             indirectLength = createLength(baseType, cppIndirectExpressionFormatter);
             elementZserioTypeName = ZserioTypeUtil.getFullName(elementType);
-            elementCppTypeName = nativeType.getElementType().getFullName();
+
+            String suffix = "";
+            if (nativeType.getElementType() instanceof NativeCompoundType)
+                suffix = ((NativeCompoundType) nativeType.getElementType()).getTypeSuffix();
+
+            elementCppTypeName = nativeType.getElementType().getFullName() + suffix;
             requiresElementBitSize = nativeType.requiresElementBitSize();
             requiresElementFactory = nativeType.requiresElementFactory();
             elementBitSizeValue = createBitSizeValue(elementType, cppExpressionFormatter);
@@ -537,10 +582,26 @@ public class CompoundFieldTemplateData
 
     public static class OptionalHolder
     {
-        public OptionalHolder(NativeOptionalHolderType nativeOptionalHolderType)
+        public OptionalHolder(NativeOptionalHolderType nativeOptionalHolderType, List<TemplateParameter> fieldTParams)
         {
-            cppTypeName = nativeOptionalHolderType.getFullName();
-            cppArgumentTypeName = nativeOptionalHolderType.getArgumentTypeName();
+            String templateSuffix = "";
+            if (!fieldTParams.isEmpty())
+            {
+                templateSuffix += "<";
+                for (int i=0; i<fieldTParams.size(); i++)
+                {
+                    templateSuffix += fieldTParams.get(i).getName().replace(".", "::");
+                    if (i<(fieldTParams.size()-1))
+                        templateSuffix += ", ";
+                }
+                templateSuffix += ">";
+            }
+
+            // TODO Error-prone quick hack! Intro proper TemplatedNativeType or some similar concept
+            String typNam = nativeOptionalHolderType.getFullName();
+            cppTypeName = typNam.substring(0, typNam.length()-1) + templateSuffix + ">";
+            String typArgNam = nativeOptionalHolderType.getArgumentTypeName();
+            cppArgumentTypeName = typArgNam.substring(0, typArgNam.length()-2) + templateSuffix + ">&";
         }
 
         public String getCppTypeName()
@@ -669,7 +730,8 @@ public class CompoundFieldTemplateData
             CompoundType owner, ZserioType baseFieldType, boolean withWriterCode) throws ZserioEmitException
     {
         if (baseFieldType instanceof CompoundType)
-            return new Compound(cppNativeTypeMapper, owner, (CompoundType)baseFieldType, withWriterCode);
+            return new Compound(cppNativeTypeMapper, owner, (CompoundType)baseFieldType, withWriterCode, cppExpressionFormatter,
+                    cppIndirectExpressionFormatter);
         else if (baseFieldType instanceof TypeInstantiation)
             return new Compound(cppNativeTypeMapper, cppExpressionFormatter, cppIndirectExpressionFormatter,
                     owner, (TypeInstantiation)baseFieldType, withWriterCode);
@@ -678,7 +740,8 @@ public class CompoundFieldTemplateData
     }
 
     private static OptionalHolder createOptionalHolder(ZserioType fieldType, ZserioType baseFieldType,
-            boolean isOptionalField, CppNativeTypeMapper cppNativeTypeMapper, IncludeCollector includeCollector)
+            boolean isOptionalField, CppNativeTypeMapper cppNativeTypeMapper, IncludeCollector includeCollector,
+                                                       List<TemplateParameter> tparams)
                     throws ZserioEmitException
     {
         ZserioType fieldInstantiatedType = baseFieldType;
@@ -695,7 +758,7 @@ public class CompoundFieldTemplateData
                 cppNativeTypeMapper.getCppOptionalHolderType(fieldType, isOptionalField, useHeapOptionalHolder);
         includeCollector.addHeaderIncludesForType(nativeOptionalHolderType);
 
-        return new OptionalHolder(nativeOptionalHolderType);
+        return new OptionalHolder(nativeOptionalHolderType, tparams);
     }
 
     private final Optional                      optional;
@@ -722,4 +785,5 @@ public class CompoundFieldTemplateData
     private final boolean                       withWriterCode;
     private final boolean                       isExternal;
     private final boolean                       isComplexExternal;
+    private final boolean                       isTemplate;
 }

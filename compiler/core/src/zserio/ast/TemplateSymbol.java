@@ -1,40 +1,57 @@
 package zserio.ast;
 
-import java.math.BigInteger;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
 import antlr.collections.AST;
 import zserio.antlr.ZserioParserTokenTypes;
 import zserio.antlr.util.BaseTokenAST;
 import zserio.antlr.util.ParserException;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * AST node for template parameters.
  */
-public class TemplateSymbol extends TokenAST
+public class TemplateSymbol extends CompoundType
 {
-    /**
-     * Gets the name of the field.
-     *
-     * @return Returns name of the field.
-     */
+    @Override
+    public Package getPackage()
+    {
+        return new Package();
+    }
+
+    @Override
+    public Iterable<ZserioType> getUsedTypeList()
+    {
+        throw new InternalError("TemplateSymbol.getUsedTypeList() is not implemented!");
+    }
+
+    @Override
+    public void callVisitor(ZserioTypeVisitor visitor)
+    {
+        visitor.visitTemplateSymbol(this);
+    }
+
+    @Override
     public String getName()
     {
         return name;
     }
 
+    public List<String> getTypeArguments()
+    {
+        return typeArguments;
+    }
+
     @Override
     protected boolean evaluateChild(BaseTokenAST child) throws ParserException
     {
-        final AST firstChildOfChild = child.getFirstChild();
-
         switch (child.getType())
         {
         case ZserioParserTokenTypes.ID:
-            name = child.getText();
+            if (name.length() == 0)
+                name = child.getText();
+            else
+                typeArguments.add(child.getText());
             break;
 
         default:
@@ -48,5 +65,6 @@ public class TemplateSymbol extends TokenAST
 
     private static final long serialVersionUID = 4009186108710189367L;
 
-    private String name = null;
+    private String name = "";
+    private List<String> typeArguments = new ArrayList<String>();
 }

@@ -127,6 +127,21 @@ public abstract class CompoundType extends TokenAST implements ZserioScopedType,
         return functions;
     }
 
+    public List<TemplateParameter> getTemplateParameters()
+    {
+        return templateParameters;
+    }
+
+    public boolean isTemplateParameterId(String cand)
+    {
+        for (TemplateParameter t: templateParameters)
+        {
+            if (t.getName().equals(cand))
+                return true;
+        }
+        return false;
+    }
+
     /**
      * Checks if this compound type contains itself as an optional none array field.
      *
@@ -154,6 +169,13 @@ public abstract class CompoundType extends TokenAST implements ZserioScopedType,
             // external types always need initialization for the function pointers
             if (field.getIsExternal())
                 return true;
+
+            if (field.getIsTemplateSymbol())
+            {
+                TemplateSymbol ts = (TemplateSymbol) field.getFieldType();
+                if (ts.getTypeArguments().size() > 0)
+                    return true;
+            }
 
             final ZserioType fieldBaseType = TypeReference.resolveBaseType(field.getFieldReferencedType());
             if (fieldBaseType instanceof CompoundType)
@@ -278,8 +300,8 @@ public abstract class CompoundType extends TokenAST implements ZserioScopedType,
 
     protected void addTemplateParameter(TemplateParameter templateParameter)
     {
-	templateParameter.setCompoundType(this);
-	templateParameters.add(templateParameter);
+        templateParameter.setCompoundType(this);
+        templateParameters.add(templateParameter);
     }
 
     protected void addParameter(Parameter parameter)

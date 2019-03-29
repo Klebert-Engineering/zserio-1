@@ -9,7 +9,11 @@ public class NativeObjectArrayType extends NativeArrayType
             CppNativeType elementType)
     {
         super(packageName,
-                TemplateInstantiationFormatter.format(OBJECT_ARRAY_TEMPLATE, elementType.getFullName()),
+                TemplateInstantiationFormatter.format(OBJECT_ARRAY_TEMPLATE,
+                        elementType.getFullName() +
+                        ((elementType instanceof NativeCompoundType) ?
+                        ((NativeCompoundType)elementType).getTypeSuffix():
+                         "")),
                 includePathRoot + OBJECT_ARRAY_INCLUDE, elementType);
     }
 

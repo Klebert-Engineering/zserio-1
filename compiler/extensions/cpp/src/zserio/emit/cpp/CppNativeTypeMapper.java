@@ -1,53 +1,9 @@
 package zserio.emit.cpp;
 
-import zserio.ast.ArrayType;
-import zserio.ast.PackageName;
-import zserio.ast.UnionType;
-import zserio.ast.BitFieldType;
-import zserio.ast.BooleanType;
-import zserio.ast.ChoiceType;
-import zserio.ast.CompoundType;
-import zserio.ast.ConstType;
-import zserio.ast.ZserioType;
-import zserio.ast.ZserioTypeVisitor;
-import zserio.ast.EnumType;
-import zserio.ast.FloatType;
-import zserio.ast.FunctionType;
-import zserio.ast.IntegerType;
-import zserio.ast.ServiceType;
-import zserio.ast.TopicType;
-import zserio.ast.StructureType;
-import zserio.ast.SignedBitFieldType;
-import zserio.ast.SqlDatabaseType;
-import zserio.ast.SqlTableType;
-import zserio.ast.StdIntegerType;
-import zserio.ast.StringType;
-import zserio.ast.Subtype;
-import zserio.ast.TypeInstantiation;
-import zserio.ast.TypeReference;
-import zserio.ast.UnsignedBitFieldType;
-import zserio.ast.VarIntegerType;
+import zserio.ast.*;
 import zserio.emit.common.PackageMapper;
 import zserio.emit.common.ZserioEmitException;
-import zserio.emit.cpp.types.CppNativeType;
-import zserio.emit.cpp.types.NativeArrayType;
-import zserio.emit.cpp.types.NativeBooleanType;
-import zserio.emit.cpp.types.NativeCompoundType;
-import zserio.emit.cpp.types.NativeConstType;
-import zserio.emit.cpp.types.NativeDoubleType;
-import zserio.emit.cpp.types.NativeEnumType;
-import zserio.emit.cpp.types.NativeFloatType;
-import zserio.emit.cpp.types.NativeHeapOptionalHolderType;
-import zserio.emit.cpp.types.NativeInPlaceOptionalHolderType;
-import zserio.emit.cpp.types.NativeIntegralArrayType;
-import zserio.emit.cpp.types.NativeIntegralType;
-import zserio.emit.cpp.types.NativeObjectArrayType;
-import zserio.emit.cpp.types.NativeOptimizedOptionalHolderType;
-import zserio.emit.cpp.types.NativeOptionalHolderType;
-import zserio.emit.cpp.types.NativeServiceType;
-import zserio.emit.cpp.types.NativeStdIntType;
-import zserio.emit.cpp.types.NativeStringType;
-import zserio.emit.cpp.types.NativeSubType;
+import zserio.emit.cpp.types.*;
 
 public class CppNativeTypeMapper
 {
@@ -343,6 +299,12 @@ public class CppNativeTypeMapper
         public void visitUnionType(UnionType type)
         {
             mapObjectArray();
+        }
+
+        @Override
+        public void visitTemplateSymbol(TemplateSymbol type)
+        {
+            // not supported
         }
 
         @Override
@@ -646,6 +608,13 @@ public class CppNativeTypeMapper
         }
 
         @Override
+        public void visitTemplateSymbol(TemplateSymbol type){
+           cppType = new NativeUnboundTemplateType(type.getName());
+        }
+
+
+
+        @Override
         protected void mapSignedIntegralType(int nBits, boolean variable)
         {
             if (variable)
@@ -724,7 +693,7 @@ public class CppNativeTypeMapper
             final PackageName packageName = cppPackageMapper.getPackageName(type);
             final String name = type.getName();
             final String includeFileName = getIncludePath(packageName, name);
-            cppType = new NativeCompoundType(packageName, name, includeFileName);
+            cppType = new NativeCompoundType(packageName, name, includeFileName, type.getTemplateParameters());
         }
 
         private CppNativeType cppType = null;
@@ -808,4 +777,5 @@ public class CppNativeTypeMapper
         new NativeArrayType(ZSERIO_RUNTIME_PACKAGE_NAME, "VarIntArray", BASIC_ARRAY_H, int64Type);
     private final static NativeArrayType varUIntArrayType =
         new NativeArrayType(ZSERIO_RUNTIME_PACKAGE_NAME, "VarUIntArray", BASIC_ARRAY_H, uint64Type);
+
 }

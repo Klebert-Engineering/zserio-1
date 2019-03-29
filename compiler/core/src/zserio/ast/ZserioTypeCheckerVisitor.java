@@ -182,6 +182,12 @@ public class ZserioTypeCheckerVisitor implements ZserioTypeVisitor
         // not supported
     }
 
+    @Override
+    public void visitTemplateSymbol(TemplateSymbol type)
+    {
+        // not supported
+    }
+
     /**
      * Throws if any error occurred.
      *

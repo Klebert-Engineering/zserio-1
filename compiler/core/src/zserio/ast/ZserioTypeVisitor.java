@@ -156,4 +156,11 @@ public interface ZserioTypeVisitor
      * @param type VarIntegerType instance which calls this visitor.
      */
     void visitVarIntegerType(VarIntegerType type);
+
+    /**
+     * Visitor called form TemplateSymbol class.
+     *
+     * @param type Template symbol instance which calls this visitor.
+     */
+    void visitTemplateSymbol(TemplateSymbol type);
 }

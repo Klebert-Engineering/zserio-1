@@ -1,5 +1,6 @@
 <#include "CompoundField.inc.ftl">
 <#include "CompoundParameter.inc.ftl">
+
 <#macro compound_constructor_declaration compoundConstructorsData>
     ${compoundConstructorsData.compoundName}();
 </#macro>
@@ -26,7 +27,8 @@
     <#local hasInitializers=constructorArgumentTypeList?has_content ||
             needs_compound_initialization(compoundConstructorsData) ||
             has_field_with_initialization(compoundConstructorsData.fieldList)/>
-${compoundConstructorsData.compoundName}::${compoundConstructorsData.compoundName}(zserio::BitStreamReader& _in<#rt>
+<@compound_template_usage_clause/>
+<@compound_type_specifier compoundConstructorsData.compoundName/>::${compoundConstructorsData.compoundName}(zserio::BitStreamReader& _in<#rt>
     <#if constructorArgumentTypeList?has_content>
         ,${constructorArgumentTypeList}<#t>
     </#if>
@@ -63,7 +65,8 @@ ${compoundConstructorsData.compoundName}::${compoundConstructorsData.compoundNam
     <#local hasInitializers=constructorArgumentTypeList?has_content ||
             needs_compound_initialization(compoundConstructorsData) ||
             has_field_with_initialization(compoundConstructorsData.fieldList)/>
-${compoundConstructorsData.compoundName}::${compoundConstructorsData.compoundName}(const zserio::BlobInspectorTree& _tree<#rt>
+<@compound_template_usage_clause/>
+<@compound_type_specifier compoundConstructorsData.compoundName/>::${compoundConstructorsData.compoundName}(const zserio::BlobInspectorTree& _tree<#rt>
     <#if constructorArgumentTypeList?has_content>
         ,${constructorArgumentTypeList}<#t>
     </#if>
@@ -116,7 +119,8 @@ ${compoundConstructorsData.compoundName}::${compoundConstructorsData.compoundNam
 </#macro>
 
 <#macro compound_copy_constructor_definition compoundConstructorsData>
-${compoundConstructorsData.compoundName}::${compoundConstructorsData.compoundName}(<#rt>
+<@compound_template_usage_clause/>
+<@compound_type_specifier compoundConstructorsData.compoundName/>::${compoundConstructorsData.compoundName}(<#rt>
     <#lt>const ${compoundConstructorsData.compoundName}& _other)<#if compoundConstructorsData.fieldList?has_content> :</#if>
     <#list compoundConstructorsData.fieldList as field>
         <@compound_copy_constructor_initializer_field field, field_has_next, 2/>
@@ -130,12 +134,13 @@ ${compoundConstructorsData.compoundName}::${compoundConstructorsData.compoundNam
 </#macro>
 
 <#macro compound_assignment_operator_declaration compoundConstructorsData>
-    ${compoundConstructorsData.compoundName}& operator=(const ${compoundConstructorsData.compoundName}& _other);
+   <@compound_type_specifier compoundConstructorsData.compoundName/>& operator=(const <@compound_type_specifier compoundConstructorsData.compoundName/>& _other);
 </#macro>
 
 <#macro compound_assignment_operator_definition compoundConstructorsData>
-${compoundConstructorsData.compoundName}& ${compoundConstructorsData.compoundName}::operator=(<#rt>
-    <#lt>const ${compoundConstructorsData.compoundName}& _other)
+<@compound_template_usage_clause/>
+<@compound_type_specifier compoundConstructorsData.compoundName/>& <@compound_type_specifier compoundConstructorsData.compoundName/>::operator=(<#rt>
+    <#lt>const <@compound_type_specifier compoundConstructorsData.compoundName/>& _other)
 {
     <#list compoundConstructorsData.fieldList as field>
         <@compound_assignment_field field, 1/>
@@ -156,7 +161,8 @@ ${compoundConstructorsData.compoundName}& ${compoundConstructorsData.compoundNam
 
 <#macro compound_initialize_definition compoundConstructorsData needsChildrenInitialization>
     <#local constructorArgumentTypeList><@compound_constructor_argument_type_list compoundConstructorsData, 2/></#local>
-void ${compoundConstructorsData.compoundName}::initialize(${constructorArgumentTypeList})
+<@compound_template_usage_clause/>
+void <@compound_type_specifier compoundConstructorsData.compoundName/>::initialize(${constructorArgumentTypeList})
 {
     <@compound_parameter_initialize compoundConstructorsData.compoundParametersData, 1/>
     m_isInitialized = true;

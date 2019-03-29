@@ -1,10 +1,7 @@
 package zserio.ast;
 
 import java.math.BigInteger;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import antlr.collections.AST;
 import zserio.antlr.ZserioParserTokenTypes;
@@ -238,6 +235,11 @@ public class Field extends TokenAST
         return referencedTypes;
     }
 
+    public List<TemplateParameter> getTemplateParameters()
+    {
+       return templateParameters;
+    }
+
     /**
      * Gets documentation comment associated to this field.
      *
@@ -321,11 +323,13 @@ public class Field extends TokenAST
             fieldType = (ZserioType)child;
             break;
 
-        case ZserioParserTokenTypes.TEMPLATE_SYMBOL:
-            isTemplateSymbol = true;
+        case ZserioParserTokenTypes.TEMPLATE_PARAMETER:
+            templateParameters.add((TemplateParameter)child);
             break;
 
-        case ZserioParserTokenTypes.TEMPLATE_PARAMETER:
+        case ZserioParserTokenTypes.TEMPLATE_SYMBOL:
+            isTemplateSymbol = true;
+            fieldType = (ZserioType)child;
             break;
 
         default:
@@ -453,4 +457,5 @@ public class Field extends TokenAST
     private SqlConstraint sqlConstraint = SqlConstraint.createDefaultFieldConstraint();
     private boolean isVirtual = false;
     private TokenAST tokenWithDoc = null;
+    private final List<TemplateParameter> templateParameters = new ArrayList<TemplateParameter>();
 }

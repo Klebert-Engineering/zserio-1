@@ -22,7 +22,10 @@
 </#if>
 <@system_includes cppSystemIncludes, false/>
 
+<#if isTemplate>
+<#else>
 #include "<@include_path package.path, "${name}.h"/>"
+</#if>
 <#if withInspectorCode>
 #include "<@include_path rootPackage.path, "InspectorZserioTypeNames.h"/>"
 #include "<@include_path rootPackage.path, "InspectorZserioNames.h"/>"
@@ -71,7 +74,8 @@
 
 </#if>
 <#if withWriterCode>
-${name}::${name}()<#rt>
+<@compound_template_usage_clause/>
+<@compound_type_specifier name/>::${name}()<#rt>
     <#assign constructorMembersInitialization><@compound_constructor_members_initialization compoundConstructorsData/></#assign>
     <#if constructorMembersInitialization?has_content>
         <#lt> :
@@ -103,7 +107,8 @@ ${name}::${name}()<#rt>
 
 </#if>
 <#if needsChildrenInitialization>
-void ${name}::initializeChildren()
+<@compound_template_usage_clause/>
+void <@compound_type_specifier name/>::initializeChildren()
 {
     <#list fieldList as field>
     <@compound_initialize_children_field field, name, 1/>
@@ -122,7 +127,8 @@ void ${name}::initializeChildren()
 <@compound_field_setter_definition field name "compound_set_field"/>
 
     <#if field.optional??>
-bool ${name}::${field.optional.indicatorName}() const
+<@compound_template_usage_clause/>
+bool <@compound_type_specifier name/>::${field.optional.indicatorName}() const
 {
     return (<@field_optional_condition field/>);
 }
@@ -131,7 +137,8 @@ bool ${name}::${field.optional.indicatorName}() const
 </#if>
 </#list>
 <#if hasExternals>
-${name}::~${name}()
+<@compound_template_usage_clause/>
+<@compound_type_specifier name/>::~${name}()
 {
     <#list complexExternalFieldList as field>
     if (m_${field.name}_BUFFER)
@@ -159,7 +166,8 @@ ${I}_endBitPosition = zserio::alignTo(zserio::NUM_BITS_PER_BYTE, _endBitPosition
     <@structure_align_field field, indent/>
     <@compound_bitsizeof_field field, indent/>
 </#macro>
-size_t ${name}::bitSizeOf(size_t<#if fieldList?has_content> _bitPosition</#if>) const
+<@compound_template_usage_clause/>
+size_t <@compound_type_specifier name/>::bitSizeOf(size_t<#if fieldList?has_content> _bitPosition</#if>) const
 {
 <#if fieldList?has_content>
     size_t _endBitPosition = _bitPosition;
@@ -197,7 +205,8 @@ ${I}}
     </#if>
     <@compound_initialize_offsets_field field, indent/>
 </#macro>
-size_t ${name}::initializeOffsets(size_t _bitPosition)
+<@compound_template_usage_clause/>
+size_t <@compound_type_specifier name/>::initializeOffsets(size_t _bitPosition)
 {
     <#if fieldList?has_content>
     size_t _endBitPosition = _bitPosition;
@@ -224,7 +233,8 @@ size_t ${name}::initializeOffsets(size_t _bitPosition)
 }
 </#if>
 
-bool ${name}::operator==(const ${name}&<#if compoundParametersData.list?has_content || fieldListWithoutComplexExternals?has_content> _other</#if>) const
+<@compound_template_usage_clause/>
+bool <@compound_type_specifier name/>::operator==(const ${name}&<#if compoundParametersData.list?has_content || fieldListWithoutComplexExternals?has_content> _other</#if>) const
 {
 <#if compoundParametersData.list?has_content || fieldListWithoutComplexExternals?has_content>
     if (this != &_other)
@@ -245,7 +255,8 @@ bool ${name}::operator==(const ${name}&<#if compoundParametersData.list?has_cont
     return true;
 }
 
-int ${name}::hashCode() const
+<@compound_template_usage_clause/>
+int <@compound_type_specifier name/>::hashCode() const
 {
     int _result = zserio::HASH_SEED;
 
@@ -264,7 +275,8 @@ int ${name}::hashCode() const
     return _result;
 }
 
-void ${name}::read(zserio::BitStreamReader&<#if fieldList?has_content> _in</#if>)
+<@compound_template_usage_clause/>
+void <@compound_type_specifier name/>::read(zserio::BitStreamReader&<#if fieldList?has_content> _in</#if>)
 {
 <#if fieldList?has_content>
     <#list fieldList as field>
@@ -278,7 +290,8 @@ void ${name}::read(zserio::BitStreamReader&<#if fieldList?has_content> _in</#if>
 }
 <#if withInspectorCode>
 
-void ${name}::read(const zserio::BlobInspectorTree&<#if fieldList?has_content> _tree</#if>)
+<@compound_template_usage_clause/>
+void <@compound_type_specifier name/>::read(const zserio::BlobInspectorTree&<#if fieldList?has_content> _tree</#if>)
 {
 <#if fieldList?has_content>
     size_t _treeFieldIndex = 0;
@@ -299,7 +312,8 @@ void ${name}::read(const zserio::BlobInspectorTree&<#if fieldList?has_content> _
 <#if withWriterCode>
 
 <#assign hasPreWriteAction=needsRangeCheck || needsChildrenInitialization || hasFieldWithOffset/>
-void ${name}::write(zserio::BitStreamWriter&<#if fieldList?has_content> _out</#if>, <#rt>
+<@compound_template_usage_clause/>
+void <@compound_type_specifier name/>::write(zserio::BitStreamWriter&<#if fieldList?has_content> _out</#if>, <#rt>
         zserio::PreWriteAction<#if hasPreWriteAction> _preWriteAction</#if>)<#lt>
 {
     <#if fieldList?has_content>
@@ -318,7 +332,8 @@ void ${name}::write(zserio::BitStreamWriter&<#if fieldList?has_content> _out</#i
 </#if>
 <#if withInspectorCode>
 
-void ${name}::write(zserio::BitStreamWriter&<#if fieldList?has_content> _out</#if>, <#rt>
+<@compound_template_usage_clause/>
+void <@compound_type_specifier name/>::write(zserio::BitStreamWriter&<#if fieldList?has_content> _out</#if>, <#rt>
         zserio::BlobInspectorTree&<#if fieldList?has_content || compoundFunctionsData.list?has_content> _tree</#if>,<#lt>
         zserio::PreWriteAction<#if hasPreWriteAction> _preWriteAction</#if>)
 {
@@ -342,7 +357,8 @@ void ${name}::write(zserio::BitStreamWriter&<#if fieldList?has_content> _out</#i
 </#if>
 <#if has_field_with_constraint(fieldList)>
 
-void ${name}::checkConstraints()
+<@compound_template_usage_clause/>
+void <@compound_type_specifier name/>::checkConstraints()
 {
     <#list fieldList as field>
     <@compound_check_constraint_field field, name, 1/>
@@ -351,7 +367,8 @@ void ${name}::checkConstraints()
 </#if>
 <#if needsRangeCheck>
 
-void ${name}::checkRanges()
+<@compound_template_usage_clause/>
+void <@compound_type_specifier name/>::checkRanges()
 {<#rt>
     <#list fieldList as field>
         <#if needs_field_range_check(field)>

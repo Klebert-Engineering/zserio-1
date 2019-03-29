@@ -46,7 +46,8 @@ ${I}${parameterType} ${compoundParameter.name}<#if compoundParameter_has_next>,<
 <#macro compound_parameter_accessors_definition compoundName compoundParametersData>
     <#list compoundParametersData.list as compoundParameter>
         <#if compoundParametersData.withWriterCode && !compoundParameter.isSimpleType>
-${compoundParameter.cppTypeName}& ${compoundName}::${compoundParameter.getterName}()
+<@compound_template_usage_clause/>
+${compoundParameter.cppTypeName}& <@compound_type_specifier compoundName/>::${compoundParameter.getterName}()
 {
     if (!m_isInitialized)
         throw zserio::CppRuntimeException("Parameter ${compoundParameter.name} of compound ${compoundName} "
@@ -56,7 +57,8 @@ ${compoundParameter.cppTypeName}& ${compoundName}::${compoundParameter.getterNam
 }
 
         </#if>
-${compoundParameter.cppArgumentTypeName} ${compoundName}::${compoundParameter.getterName}() const
+<@compound_template_usage_clause/>
+${compoundParameter.cppArgumentTypeName} <@compound_type_specifier compoundName/>::${compoundParameter.getterName}() const
 {
     if (!m_isInitialized)
         throw zserio::CppRuntimeException("Parameter ${compoundParameter.name} of compound ${compoundName} "

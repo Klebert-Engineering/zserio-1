@@ -1,29 +1,6 @@
 package zserio.emit.common.sql;
 
-import zserio.ast.ArrayType;
-import zserio.ast.BooleanType;
-import zserio.ast.ChoiceType;
-import zserio.ast.ConstType;
-import zserio.ast.ZserioType;
-import zserio.ast.ZserioTypeUtil;
-import zserio.ast.ZserioTypeVisitor;
-import zserio.ast.EnumType;
-import zserio.ast.FloatType;
-import zserio.ast.FunctionType;
-import zserio.ast.ServiceType;
-import zserio.ast.TopicType;
-import zserio.ast.StructureType;
-import zserio.ast.SignedBitFieldType;
-import zserio.ast.SqlDatabaseType;
-import zserio.ast.SqlTableType;
-import zserio.ast.StdIntegerType;
-import zserio.ast.StringType;
-import zserio.ast.Subtype;
-import zserio.ast.TypeInstantiation;
-import zserio.ast.TypeReference;
-import zserio.ast.UnionType;
-import zserio.ast.UnsignedBitFieldType;
-import zserio.ast.VarIntegerType;
+import zserio.ast.*;
 import zserio.emit.common.ZserioEmitException;
 import zserio.emit.common.sql.types.NativeBlobType;
 import zserio.emit.common.sql.types.NativeIntegerType;
@@ -195,6 +172,9 @@ public class SqlNativeTypeMapper
         {
             sqlType = integerType;
         }
+
+        @Override
+        public void visitTemplateSymbol(TemplateSymbol type) { /*Not supported*/ }
 
         private SqlNativeType sqlType = null;
     }
