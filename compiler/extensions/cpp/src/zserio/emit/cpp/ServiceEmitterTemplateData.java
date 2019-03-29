@@ -85,7 +85,7 @@ public class ServiceEmitterTemplateData extends UserTypeTemplateData
             if (requestType instanceof TypeReference)
             {
                TypeReference tr = (TypeReference)requestType;
-               ZserioType t = tr.getReferencedType();
+               ZserioType t = tr.getType();
                if (t instanceof CompoundType)
                {
                    CompoundType c = (CompoundType)t;

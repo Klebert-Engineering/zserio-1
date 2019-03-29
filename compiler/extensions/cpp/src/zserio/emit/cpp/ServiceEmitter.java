@@ -23,10 +23,13 @@ public class ServiceEmitter extends CppDefaultEmitter
             return;
 
         generateServiceInterface(serviceType);
-        generateServiceFactory(serviceType);
 
-        if (getWithUriServiceCode())
+        if (getWithUriServiceCode()) {
+            // TODO Generate factory also when gRPC service is generated
+            // as soon as factory actually supports gRPC based services
+        	generateServiceFactory(serviceType);
             generateUriServiceSources(serviceType);
+        }
 
         if (getWithGrpcCode())
             generateGrpcServiceSources(serviceType);
