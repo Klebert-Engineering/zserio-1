@@ -26,6 +26,11 @@ abstract class CppDefaultEmitter extends CodeDefaultEmitter
         super.processTemplate(templateName, templateData, zserioType, CPP_HEADER_EXTENSION, false);
     }
 
+    protected void processInlineTemplate(String templateName, Object templateData, ZserioType zserioType) throws ZserioEmitException
+    {
+        super.processTemplate(templateName, templateData, zserioType, CPP_INLINE_EXTENSION, false);
+    }
+
     protected void processSourceTemplate(String templateName, Object templateData, ZserioType zserioType,
             String outFileName) throws ZserioEmitException
     {
@@ -58,6 +63,7 @@ abstract class CppDefaultEmitter extends CodeDefaultEmitter
 
     private static final String CPP_SOURCE_EXTENSION = ".cpp";
     private static final String CPP_HEADER_EXTENSION = ".h";
+    private static final String CPP_INLINE_EXTENSION = ".inl";
     private static final String CPP_TEMPLATE_LOCATION = "cpp/";
 
     private final Parameters extensionParameters;

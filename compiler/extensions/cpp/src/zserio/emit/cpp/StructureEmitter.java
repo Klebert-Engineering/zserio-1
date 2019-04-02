@@ -14,10 +14,13 @@ public class StructureEmitter extends CppDefaultEmitter
     @Override
     public void beginStructure(StructureType structureType) throws ZserioEmitException
     {
-        final Object templateData = new StructureEmitterTemplateData(getTemplateDataContext(), structureType);
+        final StructureEmitterTemplateData templateData = new StructureEmitterTemplateData(getTemplateDataContext(), structureType);
 
         processHeaderTemplate(TEMPLATE_HEADER_NAME, templateData, structureType);
-        processSourceTemplate(TEMPLATE_SOURCE_NAME, templateData, structureType);
+        if (templateData.getIsTemplate())
+            processInlineTemplate(TEMPLATE_SOURCE_NAME, templateData, structureType);
+        else
+            processSourceTemplate(TEMPLATE_SOURCE_NAME, templateData, structureType);
     }
 
     private static final String TEMPLATE_SOURCE_NAME = "Structure.cpp.ftl";

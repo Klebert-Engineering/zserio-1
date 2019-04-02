@@ -122,6 +122,6 @@ ${parameter.cppType} ${parameter.name}<#if parameter_has_next>, </#if><#t>
 
 <@namespace_end package.path/>
 
-<#if isTemplate>#include "${name}.cpp"</#if>
+<#if isTemplate>#include "${name}.inl"</#if>
 
 <@include_guard_end package.path, name/>
