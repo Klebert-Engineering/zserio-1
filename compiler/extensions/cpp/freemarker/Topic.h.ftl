@@ -33,12 +33,12 @@ public:
     void publish(zserio::PubSubClient& pub, ${valueTypeName} &pl, int qualityOfService, bool retain) const;
 
     /** Subscribe to this topic get notifications if payload is available */
-    using OnPayloadAvailable = std::function<void(const ${valueTypeName}& pl)>;
+    using OnPayloadAvailable = std::function<void(const std::string& topic, const ${valueTypeName}& pl)>;
     zserio::PubSubClient::SubscriptionId subscribe(zserio::PubSubClient& sub, const OnPayloadAvailable& callback);
     void unsubscribe(zserio::PubSubClient& sub, zserio::PubSubClient::SubscriptionId id);
 
     /** Gets invoked when message with compatible topic is available */
-    void onMessageAvailable(const uint8_t *msgData, size_t size) const override;
+    void onMessageAvailable(const std::string& topic, const uint8_t *msgData, size_t size) const override;
 
 private:
     std::map<zserio::PubSubClient::SubscriptionId, OnPayloadAvailable> subscribers_;

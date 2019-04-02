@@ -48,11 +48,11 @@ void ${name}::unsubscribe(
     }
 }
 
-void ${name}::onMessageAvailable(const uint8_t * msgData, size_t  size) const
+void ${name}::onMessageAvailable(const std::string& topic, const uint8_t * msgData, size_t  size) const
 {
     auto pl = dataToSzerio<${valueTypeName}>(msgData, size);
     for (auto& sub: subscribers_)
-        sub.second(pl);
+        sub.second(topic, pl);
 }
 
 <@namespace_end package.path/>
