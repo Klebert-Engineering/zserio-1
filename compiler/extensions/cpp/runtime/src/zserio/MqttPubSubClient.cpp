@@ -224,7 +224,7 @@ struct MqttPubSubClient::Impl
         for (auto& t: m_topics)
         {
             if (t->matches(topic))
-                t->onMessageAvailable(msgData, msgSize);
+                t->onMessageAvailable(topic, msgData, msgSize);
         }
     }
 
