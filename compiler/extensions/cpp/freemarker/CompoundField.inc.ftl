@@ -436,10 +436,11 @@ ${I}${nodeName}.setZserioDescriptor(${startBitPositionName}, _out.getBitPosition
 </#macro>
 
 <#macro define_offset_checker compoundName field>
+<@compound_template_usage_clause/>
 class <@offset_checker_name field.name/>
 {
 public:
-    explicit <@offset_checker_name field.name/>(${compoundName}& owner) : m_owner(owner) {}
+    explicit <@offset_checker_name field.name/>(${compoundName}<@compound_template_paramlist/>& owner) : m_owner(owner) {}
 
     void checkOffset(size_t _index, size_t byteOffset) const
     {
@@ -450,19 +451,24 @@ public:
     }
 
 private:
-    ${compoundName}& m_owner;
+    ${compoundName}<@compound_template_paramlist/>& m_owner;
 };
 </#macro>
 
 <#macro offset_setter_name fieldName>
+    _offsetSetter_${fieldName}<@compound_template_paramlist/><#t>
+</#macro>
+
+<#macro offset_setter_name_no_templ_params fieldName>
     _offsetSetter_${fieldName}<#t>
 </#macro>
 
 <#macro define_offset_setter compoundName field>
-class <@offset_setter_name field.name/>
+<@compound_template_usage_clause/>
+class <@offset_setter_name_no_templ_params field.name/>
 {
 public:
-    explicit <@offset_setter_name field.name/>(${compoundName}& owner) : m_owner(owner) {}
+    explicit <@offset_setter_name field.name/>(${compoundName}<@compound_template_paramlist/>& owner) : m_owner(owner) {}
 
     void setOffset(size_t _index, size_t byteOffset) const
     {
@@ -471,7 +477,7 @@ public:
     }
 
 private:
-    ${compoundName}& m_owner;
+    ${compoundName}<@compound_template_paramlist/>& m_owner;
 };
 </#macro>
 
@@ -515,11 +521,16 @@ private:
     _elementInitializer_${compoundName}_${fieldName}<@compound_template_paramlist/><#t>
 </#macro>
 
+<#macro element_initializer_name_no_templ_params compoundName fieldName>
+    _elementInitializer_${compoundName}_${fieldName}<#t>
+</#macro>
+
 <#macro define_element_initializer compoundName field>
-class <@element_initializer_name compoundName, field.name/>
+<@compound_template_usage_clause/>
+class <@element_initializer_name_no_templ_params compoundName, field.name/>
 {
 public:
-    explicit <@element_initializer_name compoundName, field.name/>(${compoundName}& owner) : m_owner(owner) {}
+    explicit <@element_initializer_name compoundName, field.name/>(${compoundName}<@compound_template_paramlist/>& owner) : m_owner(owner) {}
 
     void initialize(${field.array.elementCppTypeName}& element, size_t _index)
     {
@@ -528,7 +539,7 @@ public:
     }
 
 private:
-    ${compoundName}& m_owner;
+    ${compoundName}<@compound_template_paramlist/>& m_owner;
 };
 </#macro>
 
@@ -551,7 +562,7 @@ public:
 </#macro>
 
 <#macro array_offset_checker field>
-    <#if field.offset?? && field.offset.containsIndex>, <@offset_checker_name field.name/>(*this)</#if><#t>
+    <#if field.offset?? && field.offset.containsIndex>, <@offset_checker_name field.name/><@compound_template_paramlist/>(*this)</#if><#t>
 </#macro>
 
 <#macro array_element_factory compoundName field>
@@ -868,7 +879,7 @@ ${I}m_${field.name} = _other.m_${field.name};
     <#elseif field.array?? && field.array.elementCompound??>
         <#if needs_compound_field_initialization(field.array.elementCompound)>
             <#local initializeCommand><@compound_get_field field/>.initializeElements(<#rt>
-                <#lt><@element_initializer_name compoundName, field.name/><@compound_template_paramlist/>(*this));</#local>
+                <#lt><@element_initializer_name compoundName, field.name/>(*this));</#local>
         <#elseif field.array.elementCompound.needsChildrenInitialization>
             <#local initializeCommand><@compound_get_field field/>.initializeElements(<#rt>
                 <#lt><@element_children_initializer_name compoundName, field.name/><@compound_template_paramlist/>());</#local>
