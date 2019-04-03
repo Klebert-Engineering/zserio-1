@@ -593,7 +593,8 @@ public class CompoundFieldTemplateData
         public OptionalHolder(PackageMapper packageMapper, NativeOptionalHolderType nativeOptionalHolderType, List<TemplateParameter> fieldTParams)
         {
             String templateSuffix = "";
-            if (!fieldTParams.isEmpty())
+            boolean tParamsAlreadyIncl =  (nativeOptionalHolderType.getWrappedType() instanceof NativeObjectArrayType);
+            if (!fieldTParams.isEmpty() && !tParamsAlreadyIncl)
             {
                 templateSuffix += "<";
                 for (int i=0; i<fieldTParams.size(); i++)
