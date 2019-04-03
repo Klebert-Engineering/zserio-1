@@ -59,6 +59,14 @@ final public class PackageMapper
         return getMappedPackageName(zserioPackage.getPackageName());
     }
 
+    /** Fetches the topLevelPackage name which was provided for source generation. */
+    public PackageName getTopLevelPackageName()
+    {
+        final PackageName.Builder mappedPackageNameBuilder = new PackageName.Builder();
+        mappedPackageNameBuilder.append(topLevelPackageName);
+        return mappedPackageNameBuilder.get();
+    }
+
     /**
      * Maps the given package name.
      *

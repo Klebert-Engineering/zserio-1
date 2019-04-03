@@ -6,6 +6,7 @@ import java.util.List;
 import zserio.ast.CompoundType;
 import zserio.ast.Field;
 import zserio.emit.common.ExpressionFormatter;
+import zserio.emit.common.PackageMapper;
 import zserio.emit.common.ZserioEmitException;
 
 public class CompoundTypeTemplateData extends UserTypeTemplateData
@@ -22,10 +23,11 @@ public class CompoundTypeTemplateData extends UserTypeTemplateData
         final ExpressionFormatter cppExpressionFormatter = context.getExpressionFormatter(this);
         final ExpressionFormatter cppIndirectExpressionFormatter =
                 context.getOwnerIndirectExpressionFormatter(this);
+        final PackageMapper pm = context.getCppPackageMapper();
         boolean externals = false;
         for (Field fieldType : fieldTypeList)
         {
-            final CompoundFieldTemplateData data = new CompoundFieldTemplateData(cppNativeTypeMapper,
+            final CompoundFieldTemplateData data = new CompoundFieldTemplateData(pm, cppNativeTypeMapper,
                     compoundType, fieldType, cppExpressionFormatter, cppIndirectExpressionFormatter,
                     this, withWriterCode);
 

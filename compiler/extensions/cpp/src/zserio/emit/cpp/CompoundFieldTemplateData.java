@@ -10,12 +10,15 @@ import zserio.ast.*;
 import zserio.ast.Package;
 import zserio.ast.TypeInstantiation.InstantiatedParameter;
 import zserio.emit.common.ExpressionFormatter;
+import zserio.emit.common.PackageMapper;
 import zserio.emit.common.ZserioEmitException;
 import zserio.emit.cpp.types.*;
 
 public class CompoundFieldTemplateData
 {
-    public CompoundFieldTemplateData(CppNativeTypeMapper cppNativeTypeMapper,
+    public CompoundFieldTemplateData(
+            PackageMapper packageMapper,
+            CppNativeTypeMapper cppNativeTypeMapper,
             CompoundType parentType, Field field,
             ExpressionFormatter cppExpressionFormatter, ExpressionFormatter cppIndirectExpressionFormatter,
             IncludeCollector includeCollector, boolean withWriterCode) throws ZserioEmitException
@@ -43,7 +46,12 @@ public class CompoundFieldTemplateData
                 templateSuffix += "<";
                 for (int i=0; i<fieldTParams.size(); i++)
                 {
-                    String templateTypeId = fieldTParams.get(i).getName();
+
+                    boolean isTemplateParamBound = fieldTParams.get(i).getName().contains(".");
+                    String rootPackageNamPrefix = isTemplateParamBound
+                            ? (packageMapper.getTopLevelPackageName().toString() + ".")
+                            : "";
+                    String templateTypeId = rootPackageNamPrefix + fieldTParams.get(i).getName();
                     if (!parentType.isTemplateParameterId(templateTypeId))
                         templateIncludes.add(templateTypeId.replace(".", "/") + ".h");
                     templateSuffix += templateTypeId.replace(".","::");
@@ -75,7 +83,7 @@ public class CompoundFieldTemplateData
             array = createArray(fieldNativeType, baseFieldType, parentType, cppNativeTypeMapper,
                 cppExpressionFormatter, cppIndirectExpressionFormatter, withWriterCode);
             final boolean isOptionalField = (optional != null);
-            optionalHolder = createOptionalHolder(fieldType, baseFieldType, isOptionalField, cppNativeTypeMapper,
+            optionalHolder = createOptionalHolder(packageMapper, fieldType, baseFieldType, isOptionalField, cppNativeTypeMapper,
                     includeCollector, field.getTemplateParameters());
             isComplexExternal = false;
             externalParameters = null;
@@ -582,7 +590,7 @@ public class CompoundFieldTemplateData
 
     public static class OptionalHolder
     {
-        public OptionalHolder(NativeOptionalHolderType nativeOptionalHolderType, List<TemplateParameter> fieldTParams)
+        public OptionalHolder(PackageMapper packageMapper, NativeOptionalHolderType nativeOptionalHolderType, List<TemplateParameter> fieldTParams)
         {
             String templateSuffix = "";
             if (!fieldTParams.isEmpty())
@@ -590,7 +598,12 @@ public class CompoundFieldTemplateData
                 templateSuffix += "<";
                 for (int i=0; i<fieldTParams.size(); i++)
                 {
-                    templateSuffix += fieldTParams.get(i).getName().replace(".", "::");
+                    boolean isTemplateParamBound = fieldTParams.get(i).getName().contains(".");
+                    String rootPackageNamPrefix = isTemplateParamBound
+                            ? (packageMapper.getTopLevelPackageName().toString() + ".")
+                            : "";
+                    String templateTypeId = rootPackageNamPrefix + fieldTParams.get(i).getName();
+                    templateSuffix += templateTypeId.replace(".", "::");
                     if (i<(fieldTParams.size()-1))
                         templateSuffix += ", ";
                 }
@@ -739,7 +752,7 @@ public class CompoundFieldTemplateData
             return null;
     }
 
-    private static OptionalHolder createOptionalHolder(ZserioType fieldType, ZserioType baseFieldType,
+    private static OptionalHolder createOptionalHolder(PackageMapper packageMapper, ZserioType fieldType, ZserioType baseFieldType,
             boolean isOptionalField, CppNativeTypeMapper cppNativeTypeMapper, IncludeCollector includeCollector,
                                                        List<TemplateParameter> tparams)
                     throws ZserioEmitException
@@ -758,7 +771,7 @@ public class CompoundFieldTemplateData
                 cppNativeTypeMapper.getCppOptionalHolderType(fieldType, isOptionalField, useHeapOptionalHolder);
         includeCollector.addHeaderIncludesForType(nativeOptionalHolderType);
 
-        return new OptionalHolder(nativeOptionalHolderType, tparams);
+        return new OptionalHolder(packageMapper, nativeOptionalHolderType, tparams);
     }
 
     private final Optional                      optional;
