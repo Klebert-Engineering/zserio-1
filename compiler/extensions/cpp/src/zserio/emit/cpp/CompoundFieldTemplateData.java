@@ -359,7 +359,7 @@ public class CompoundFieldTemplateData
             public InstantiatedParameterData(String expr)
             {
                 expression = expr;
-                indirectExpression = expr;
+                indirectExpression = "m_owner." + expr;
             }
 
             public String getExpression()
