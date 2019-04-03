@@ -304,9 +304,10 @@ public class CppNativeTypeMapper
         @Override
         public void visitTemplateSymbol(TemplateSymbol type)
         {
-            // not supported
             NativeUnboundTemplateType unboundttype = new NativeUnboundTemplateType(type.getName());
-            cppType = new NativeObjectArrayType(type.getPackage().getPackageName(), "", unboundttype);
+            cppType = new NativeObjectArrayType(ZSERIO_RUNTIME_PACKAGE_NAME,
+                    ZSERIO_RUNTIME_INCLUDE_PREFIX,
+                    unboundttype);
         }
 
         @Override
