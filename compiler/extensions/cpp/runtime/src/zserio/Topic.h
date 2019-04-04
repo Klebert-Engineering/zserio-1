@@ -29,7 +29,7 @@ public:
     std::string unboundTopic() const;
 
     /** Gets called when message with compatible topic has arrived */
-    virtual void onMessageAvailable(const uint8_t* msgData, size_t size) const = 0;
+    virtual void onMessageAvailable(const std::string& topic, const uint8_t* msgData, size_t msgSize) const = 0;
 
     /** Activate subscription for this topic at the provided PubSubClient */
     PubSubClient::SubscriptionId subscribe(PubSubClient& sub);
