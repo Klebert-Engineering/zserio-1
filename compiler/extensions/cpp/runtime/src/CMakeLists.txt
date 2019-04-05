@@ -73,6 +73,7 @@ target_include_directories(ZserioCppRuntime PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 if (ZSERIO_RUNTIME_INCLUDE_RPC_CURL)
     find_package (CURL REQUIRED)
     target_link_libraries(ZserioCppRuntime PUBLIC ${CURL_LIBRARIES})
+    target_include_directories(ZserioCppRuntime PUBLIC ${CURL_INCLUDE_DIRS})
     set(ZSERIO_CXX_STANDARD 11)
 endif ()
 
