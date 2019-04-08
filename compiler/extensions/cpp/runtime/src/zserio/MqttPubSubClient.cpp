@@ -76,8 +76,9 @@ struct MqttPubSubClient::Impl
         asyncTrigger();
 
         future.wait();
-        if (!future.get().empty())
-            throw CppRuntimeException(future.get());
+        auto result = future.get();
+        if (!result.empty())
+            throw CppRuntimeException(result);
     }
 
     void connect()
