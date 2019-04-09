@@ -1,6 +1,7 @@
 #include "UrlClient.h"
 
 #include <curl/curl.h>
+#include <zserio/CppRuntimeException.h>
 #include <iostream>
 
 namespace zserio
@@ -49,6 +50,7 @@ std::vector<uint8_t> UrlClient::fetchResource(const std::string& uri)
 {
     impl_->result.clear();
 
+    curl_easy_setopt(impl_->curl, CURLOPT_FAILONERROR, 1L);
     curl_easy_setopt(impl_->curl, CURLOPT_URL, uri.c_str());
     curl_easy_setopt(impl_->curl, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(impl_->curl, CURLOPT_NOPROGRESS, 1L);
@@ -58,6 +60,7 @@ std::vector<uint8_t> UrlClient::fetchResource(const std::string& uri)
     impl_->status = curl_easy_perform(impl_->curl);
     if (impl_->status != CURLE_OK) {
         impl_->statusText = std::string(curl_easy_strerror(impl_->status));
+        throw zserio::CppRuntimeException(impl_->statusText);
     }
 
     return impl_->result;
