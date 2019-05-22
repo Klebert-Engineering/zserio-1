@@ -652,7 +652,7 @@ ${I}            break;
 ${I}        _${field.name}_SKIP += 8;
 ${I}    }
 ${I}    _endBitPosition += _${field.name}_SKIP;
-${I}    _endBitPosition = m_${field.name}_INITIALIZEOFFSET(_endBitPosition);
+${I}    _endBitPosition = m_${field.name}_INITIALIZEOFFSET(0);
 ${I}}
     <#else>
 ${I}_endBitPosition = <@compound_get_field field/>.initializeOffsets(_endBitPosition);
