@@ -171,23 +171,30 @@ ${I}m_${field.name}_INITIALIZE(<#rt>
 <#list field.externalParameters as parameter>m_${parameter.name}<#if parameter_has_next>, </#if><#t>
 </#list>);
 </#if>
-${I}if (!m_${field.name}_WRITER) 
 ${I}{
-${I}    if (!m_${field.name}_BUFFER)
-${I}        throw zserio::CppRuntimeException("External write-function not registered!");
+${I}    auto _bufferToWrite = m_${field.name}_BUFFER;
+${I}    size_t _numBitsToWrite = m_${field.name}_SIZE;
+${I}    zserio::BitStreamWriter _tempExtWriter;
+${I}    if (!_bufferToWrite && m_${field.name}_WRITER) {
+${I}       m_${field.name}_WRITER(_tempExtWriter, _preWriteAction);
+${I}       size_t nb_unused; 
+${I}       _bufferToWrite = const_cast<uint8_t *>(_tempExtWriter.getWriteBuffer(nb_unused));
+${I}       _numBitsToWrite = _tempExtWriter.getBitPosition(); 
+${I}    }
+${I} 
+${I}    if (!_bufferToWrite)
+${I}         throw zserio::CppRuntimeException("External write-function not registered!");
 ${I}
 ${I}    constexpr auto chunkSize = 32;
-${I}    zserio::BitStreamReader reader(m_${field.name}_BUFFER, (m_${field.name}_SIZE+7)/8);  
+${I}    zserio::BitStreamReader reader(_bufferToWrite, (_numBitsToWrite+7)/8);
 ${I}
-${I}    for (size_t i=0; i<(m_${field.name}_SIZE/chunkSize); ++i)
+${I}    for (size_t i=0; i<(_numBitsToWrite/chunkSize); ++i)
 ${I}        _out.writeBits(reader.readBits(chunkSize));
 ${I}
-${I}    auto numTailBits = static_cast<uint8_t>(m_${field.name}_SIZE%chunkSize);
-${I}    if (numTailBits) 
-${I}        _out.writeBits(reader.readBits(numTailBits), numTailBits); 
+${I}    auto numTailBits = static_cast<uint8_t>(_numBitsToWrite%chunkSize);
+${I}    if (numTailBits)
+${I}        _out.writeBits(reader.readBits(numTailBits), numTailBits);  
 ${I}}
-${I}else
-${I}    m_${field.name}_WRITER(_out, _preWriteAction);
     <#else>
 ${I}<@compound_get_field field/>.write(_out, zserio::NO_PRE_WRITE_ACTION);
     </#if>
@@ -652,7 +659,7 @@ ${I}            break;
 ${I}        _${field.name}_SKIP += 8;
 ${I}    }
 ${I}    _endBitPosition += _${field.name}_SKIP;
-${I}    _endBitPosition = m_${field.name}_INITIALIZEOFFSET(0);
+${I}    _endBitPosition += m_${field.name}_INITIALIZEOFFSET(0);
 ${I}}
     <#else>
 ${I}_endBitPosition = <@compound_get_field field/>.initializeOffsets(_endBitPosition);
