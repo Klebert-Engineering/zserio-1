@@ -106,7 +106,15 @@ if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_ROS)
     )
 endif ()
 
-if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_MQTT OR ZSERIO_RUNTIME_INCLUDE_PUBSUB_ROS)
+if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_RTPS)
+    set(ZSERIO_CPP_RUNTIME_LIB_SRCS
+            ${ZSERIO_CPP_RUNTIME_LIB_SRCS}
+            zserio/RtpsClient.cpp
+            zserio/RtpsClient.h
+            )
+endif ()
+
+if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_MQTT OR ZSERIO_RUNTIME_INCLUDE_PUBSUB_ROS OR ZSERIO_RUNTIME_INCLUDE_PUBSUB_RTPS)
     set(ZSERIO_CPP_RUNTIME_LIB_SRCS
 	    ${ZSERIO_CPP_RUNTIME_LIB_SRCS}
         zserio/PubSubClient.h
@@ -156,5 +164,10 @@ endif ()
 
 if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_MQTT)
     target_link_libraries(ZserioCppRuntime PUBLIC paho-mqtt3a)
+    set(ZSERIO_CXX_STANDARD 11)
+endif()
+
+if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_RTPS)
+    target_link_libraries(ZserioCppRuntime PUBLIC fastrtps)
     set(ZSERIO_CXX_STANDARD 11)
 endif()
