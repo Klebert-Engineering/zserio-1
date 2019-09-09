@@ -11,7 +11,7 @@ ${name}::${name}(const std::string& host): host_(host)
 <#list rpcList as rpc>
 void ${name}::${rpc.name}(const ${rpc.requestTypeFullName}& request, ${rpc.responseTypeFullName}& response) 
 {
-    std::string uri = host_;
+    std::string uri = host_ + "/${rpc.name}";
     <#list rpc.requestFieldNames  as name>
     uri += "/" + zserio::to_string(request.get${name[0]?upper_case}${name[1..]}());
     </#list>
