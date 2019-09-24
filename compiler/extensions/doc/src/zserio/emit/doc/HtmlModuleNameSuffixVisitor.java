@@ -15,6 +15,7 @@ import zserio.ast.SqlTableType;
 import zserio.ast.StdIntegerType;
 import zserio.ast.StringType;
 import zserio.ast.Subtype;
+import zserio.ast.TopicType;
 import zserio.ast.TypeInstantiation;
 import zserio.ast.TypeReference;
 import zserio.ast.UnionType;
@@ -88,6 +89,13 @@ public class HtmlModuleNameSuffixVisitor extends ZserioAstDefaultVisitor
     public void visitSqlDatabaseType(SqlDatabaseType type)
     {
         htmlModuleNameSuffix = "SQL_DATABASE";
+    }
+
+    @Override
+    public void visitTopicType(TopicType type)
+    {
+        // FIXME: Hack
+        htmlModuleNameSuffix = "TOPIC";
     }
 
     @Override
