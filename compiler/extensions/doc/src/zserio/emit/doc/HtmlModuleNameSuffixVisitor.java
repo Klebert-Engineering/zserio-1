@@ -16,6 +16,8 @@ import zserio.ast.SqlTableType;
 import zserio.ast.StdIntegerType;
 import zserio.ast.StringType;
 import zserio.ast.Subtype;
+import zserio.ast.TopicType;
+import zserio.ast.TemplateSymbol;
 import zserio.ast.TypeInstantiation;
 import zserio.ast.TypeReference;
 import zserio.ast.UnionType;
@@ -89,6 +91,13 @@ public class HtmlModuleNameSuffixVisitor implements ZserioTypeVisitor
     }
 
     @Override
+    public void visitTopicType(TopicType type)
+    {
+        // HACK
+        htmlModuleNameSuffix = "TOPIC";
+    }
+
+    @Override
     public void visitSqlTableType(SqlTableType type)
     {
         htmlModuleNameSuffix = "SQL_TABLE";
@@ -135,6 +144,13 @@ public class HtmlModuleNameSuffixVisitor implements ZserioTypeVisitor
     {
         htmlModuleNameSuffix = "UNION";
 
+    }
+
+    @Override
+    public void visitTemplateSymbol(TemplateSymbol type)
+    {
+        // HACK
+        htmlModuleNameSuffix = "TEMPLATE";
     }
 
     @Override
