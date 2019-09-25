@@ -163,6 +163,10 @@ public class TypeNameEmitter
             throw new ZserioEmitException("Unexpected zserio type or symbol '" + t.getClass().getName() + "'!");
         }
 
+        // HACK
+        if (result == null)
+          result = "";
+
         return StringHtmlUtil.escapeForHtml(result);
     }
 
