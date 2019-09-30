@@ -175,6 +175,10 @@ public class TypeNameEmitter
                 result = res.toString();
         }
 
+        // HACK
+        if (result == null)
+          result = "";
+
         return StringHtmlUtil.escapeForHtml(result);
     }
 

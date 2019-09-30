@@ -22,7 +22,7 @@ public class TemplateSymbol extends CompoundType
     @Override
     public Iterable<ZserioType> getUsedTypeList()
     {
-        throw new InternalError("TemplateSymbol.getUsedTypeList() is not implemented!");
+        return new ArrayList<ZserioType>();
     }
 
     @Override
