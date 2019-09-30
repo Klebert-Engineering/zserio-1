@@ -600,26 +600,16 @@ ${I}_endBitPosition += ${field.bitSizeValue};
 ${I}_endBitPosition += zserio::getBitSizeOf${field.runtimeFunction.suffix}(<@compound_get_field field/>);
     <#elseif field.isComplexExternal>
 ${I}_endBitPosition = zserio::alignTo(64, _endBitPosition);
-${I}size_t _${field.name}_SKIP = 8;
 ${I}size_t _${field.name}_SIZE = 0;
 ${I}if (!m_${field.name}_BITSIZEOF)
 ${I}{
 ${I}    if (!m_${field.name}_BUFFER)
 ${I}        throw zserio::CppRuntimeException("External bitSizeOf-function not registered!");
-${I}    _${field.name}_SKIP = zserio::getBitSizeOfVarUInt(m_${field.name}_SIZE);
 ${I}    _${field.name}_SIZE = m_${field.name}_SIZE;
 ${I}}
 ${I}else
-${I}{
-${I}    while (true)
-${I}    {
-${I}        _${field.name}_SIZE = m_${field.name}_BITSIZEOF(_endBitPosition + _${field.name}_SKIP);
-${I}        if (zserio::getBitSizeOfVarUInt(_${field.name}_SIZE) == _${field.name}_SKIP)
-${I}            break;
-${I}        _${field.name}_SKIP += 8;
-${I}    }
-${I}}
-${I}_endBitPosition += _${field.name}_SKIP;
+${I}    _${field.name}_SIZE = m_${field.name}_BITSIZEOF(0);
+${I}_endBitPosition += zserio::getBitSizeOfVarUInt(_${field.name}_SIZE);;
 ${I}_endBitPosition += _${field.name}_SIZE;
     <#else>
 ${I}_endBitPosition += <@compound_get_field field/>.bitSizeOf(_endBitPosition);
@@ -640,27 +630,15 @@ ${I}_endBitPosition += ${field.bitSizeValue};
 ${I}_endBitPosition += zserio::getBitSizeOf${field.runtimeFunction.suffix}(<@compound_get_field field/>);
     <#elseif field.isComplexExternal>
 ${I}_endBitPosition = zserio::alignTo(64, _endBitPosition);
-${I}size_t _${field.name}_SKIP = 8;
-${I}if (!m_${field.name}_BITSIZEOF || !m_${field.name}_INITIALIZEOFFSET)
+${I}if (!m_${field.name}_INITIALIZEOFFSET)
 ${I}{
 ${I}    if (!m_${field.name}_BUFFER)
-${I}        throw zserio::CppRuntimeException("External bitSizeOf-function and/or initalizeOffsets-function"
-${I}                                          " not registered.");
-${I}    _endBitPosition += zserio::getBitSizeOfVarUInt(m_${field.name}_SIZE);
-${I}    _endBitPosition += m_${field.name}_SIZE;
+${I}        throw zserio::CppRuntimeException("External initalizeOffsets-function not registered.");
 ${I}}
 ${I}else
-${I}{
-${I}    while (true)
-${I}    {
-${I}        m_${field.name}_SIZE = m_${field.name}_BITSIZEOF(_endBitPosition + _${field.name}_SKIP);
-${I}        if (zserio::getBitSizeOfVarUInt(m_${field.name}_SIZE) == _${field.name}_SKIP)
-${I}            break;
-${I}        _${field.name}_SKIP += 8;
-${I}    }
-${I}    _endBitPosition += _${field.name}_SKIP;
-${I}    _endBitPosition += m_${field.name}_INITIALIZEOFFSET(0);
-${I}}
+${I}    m_${field.name}_SIZE = m_${field.name}_INITIALIZEOFFSET(0);
+${I}_endBitPosition += zserio::getBitSizeOfVarUInt(m_${field.name}_SIZE);
+${I}_endBitPosition += m_${field.name}_SIZE;
     <#else>
 ${I}_endBitPosition = <@compound_get_field field/>.initializeOffsets(_endBitPosition);
     </#if>
