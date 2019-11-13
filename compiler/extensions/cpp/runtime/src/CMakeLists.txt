@@ -29,6 +29,7 @@ project(ZserioCppRuntime)
 
 set(ZSERIO_CXX_STANDARD 98)
 
+option(ZSERIO_RUNTIME_DYNAMIC_LINKING "Build the zserio runtime for dynamic instead of static linking." OFF)
 option(ZSERIO_RUNTIME_INCLUDE_RPC_CURL "Include support for CURL-based URL RPC sub-system." OFF)
 option(ZSERIO_RUNTIME_INCLUDE_PUBSUB_ROS "Include support for ROS PubSub system." OFF)
 option(ZSERIO_RUNTIME_INCLUDE_PUBSUB_MQTT "Include support for MQTT PubSub system." OFF)
@@ -137,7 +138,14 @@ if (CMAKE_SIZEOF_VOID_P EQUAL 8)
                  APPEND PROPERTY COMPILE_DEFINITIONS ZSERIO_RUNTIME_64BIT)
 endif ()
 
-add_library(ZserioCppRuntime STATIC ${ZSERIO_CPP_RUNTIME_LIB_SRCS})
+if (ZSERIO_RUNTIME_DYNAMIC_LINKING)
+    add_library(ZserioCppRuntime SHARED ${ZSERIO_CPP_RUNTIME_LIB_SRCS})
+    set_target_properties (ZserioCppRuntime PROPERTIES
+        WINDOWS_EXPORT_ALL_SYMBOLS ON
+        )
+else ()
+    add_library(ZserioCppRuntime STATIC ${ZSERIO_CPP_RUNTIME_LIB_SRCS})
+endif ()
 
 target_include_directories(ZserioCppRuntime PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 

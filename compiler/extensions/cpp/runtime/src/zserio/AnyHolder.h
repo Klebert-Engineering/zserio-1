@@ -2,6 +2,8 @@
 #define ZSERIO_ANY_HOLDER_H_INC
 
 #include <cstddef>
+#include <typeinfo>
+#include <iostream>
 
 #include "CppRuntimeException.h"
 #include "HashCodeUtil.h"
@@ -86,7 +88,7 @@ public:
 
     template<typename T> bool isType() const
     {
-        return hasHolder() && getUntypedHolder()->isType(TypeIdHolder::get<T>());
+        return hasHolder() && getUntypedHolder()->isType(typeid(T));
     }
 
     bool isSet() const
@@ -100,20 +102,6 @@ public:
     }
 
 private:
-    class TypeIdHolder
-    {
-    public:
-        typedef int* type_id;
-
-        template <typename T>
-        static type_id get()
-        {
-            static int currentTypeId;
-
-            return &currentTypeId;
-        }
-    };
-
     class IHolder
     {
     public:
@@ -121,7 +109,7 @@ private:
         virtual bool isSet() const = 0;
         virtual IHolder* clone(void* storage) const = 0;
         virtual bool compare(const IHolder& other) const = 0;
-        virtual bool isType(TypeIdHolder::type_id typeId) const = 0;
+        virtual bool isType(const std::type_info& typeId) const = 0;
         virtual int hashCode() const = 0;
     };
 
@@ -174,9 +162,9 @@ private:
             return m_typedHolder == (static_cast<const Holder<T>*>(&other))->m_typedHolder;
         }
 
-        virtual bool isType(TypeIdHolder::type_id typeId) const
+        virtual bool isType(std::type_info const& typeId) const
         {
-            return TypeIdHolder::get<T>() == typeId;
+            return typeid(T) == typeId;
         }
 
         virtual int hashCode() const
@@ -228,7 +216,7 @@ private:
     {
         if (hasHolder())
         {
-            if (getUntypedHolder()->isType(TypeIdHolder::get<T>()))
+            if (getUntypedHolder()->isType(typeid(T)))
                 return getHolder<T>();
 
             clearHolder();
