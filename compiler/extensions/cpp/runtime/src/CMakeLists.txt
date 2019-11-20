@@ -19,6 +19,7 @@ cmake_minimum_required(VERSION 2.8.12.2)
 project(ZserioCppRuntime)
 
 option(ZSERIO_RUNTIME_INCLUDE_RPC_CURL "Include support for CURL-based URL RPC sub-system." OFF)
+option(ZSERIO_RUNTIME_INCLUDE_PUBSUB_MQTT "Include support for MQTT PubSub system." OFF)
 
 set(ZSERIO_CPP_RUNTIME_LIB_SRCS
     zserio/Arrays.h
@@ -63,9 +64,9 @@ if (ZSERIO_RUNTIME_INCLUDE_RPC_CURL)
     )
 endif ()
 
-if (ZSERIO_RUNTIME_INCLUDE_PUBSUB)
+if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_MQTT)
     set(ZSERIO_CPP_RUNTIME_LIB_SRCS
-	${ZSERIO_CPP_RUNTIME_LIB_SRCS}
+        ${ZSERIO_CPP_RUNTIME_LIB_SRCS}
         zserio/PubSubClient.h
         zserio/MqttPubSubClient.cpp
         zserio/MqttPubSubClient.h
@@ -81,21 +82,23 @@ if (CMAKE_SIZEOF_VOID_P EQUAL 8)
 endif ()
 
 add_library(ZserioCppRuntime STATIC ${ZSERIO_CPP_RUNTIME_LIB_SRCS})
-
 target_include_directories(ZserioCppRuntime PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-if (ZSERIO_RUNTIME_INCLUDE_RPC_CURL)
-    find_package (CURL REQUIRED)
-    target_link_libraries(ZserioCppRuntime PUBLIC ${CURL_LIBRARIES})
-    target_include_directories(ZserioCppRuntime PUBLIC ${CURL_INCLUDE_DIRS})
-    set(ZSERIO_CXX_STANDARD 11)
-endif ()
 
-if (ZSERIO_RUNTIME_INCLUDE_PUBSUB)
-    set_target_properties (ZserioCppRuntime PROPERTIES
+if (ZSERIO_RUNTIME_INCLUDE_RPC_CURL)
+    set_target_properties(ZserioCppRuntime PROPERTIES
         CXX_STANDARD 11
         CXX_STANDARD_REQUIRED ON
-        CXX_EXTENSIONS NO
-        )
+        CXX_EXTENSIONS NO)
+    find_package (CURL REQUIRED)
+    target_include_directories(ZserioCppRuntime PUBLIC ${CURL_INCLUDE_DIRS})
+    target_link_libraries(ZserioCppRuntime PUBLIC ${CURL_LIBRARIES})
+endif ()
+
+if (ZSERIO_RUNTIME_INCLUDE_PUBSUB_MQTT)
+    set_target_properties(ZserioCppRuntime PROPERTIES
+        CXX_STANDARD 11
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS NO)
     target_link_libraries(ZserioCppRuntime PUBLIC paho-mqtt3a)
 endif ()
 
