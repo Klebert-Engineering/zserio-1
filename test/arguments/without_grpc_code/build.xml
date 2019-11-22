@@ -13,6 +13,7 @@
         <testGenClean testName="without_grpc_code"/>
         <testGen testName="without_grpc_code" zsFile="without_grpc_code.zs">
             <arg name="withoutGrpcCode"/>
+            <arg name="withoutUriServiceCode"/>
         </testGen>
     </target>
 

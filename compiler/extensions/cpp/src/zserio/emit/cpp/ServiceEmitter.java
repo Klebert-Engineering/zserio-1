@@ -27,7 +27,7 @@ public class ServiceEmitter extends CppDefaultEmitter
         if (getWithUriServiceCode()) {
             // TODO Generate factory also when gRPC service is generated
             // as soon as factory actually supports gRPC based services
-        	generateServiceFactory(serviceType);
+            generateServiceFactory(serviceType);
             generateUriServiceSources(serviceType);
         }
 
@@ -118,7 +118,7 @@ public class ServiceEmitter extends CppDefaultEmitter
     {
         final TemplateDataContext templateDataContext = getTemplateDataContext();
         final ServiceFactoryTemplateData templateData =
-			new ServiceFactoryTemplateData(templateDataContext, serviceType);
+            new ServiceFactoryTemplateData(templateDataContext, serviceType);
         processSourceTemplate(TEMPLATE_SERVICE_FACTORY_SOURCE_NAME,  templateData, serviceType);
         processHeaderTemplate(TEMPLATE_SERVICE_FACTORY_HEADER_NAME, templateData, serviceType);
     }
