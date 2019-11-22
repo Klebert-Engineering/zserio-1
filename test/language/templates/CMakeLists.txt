@@ -55,13 +55,17 @@ set(ZSERIO_GENERATED_SOURCES
     ${ZSERIO_GEN_DIR}/templates/expression_full_template_argument/FullTemplateArgument_templates_expression_full_template_argument_color_Color.cpp
     ${ZSERIO_GEN_DIR}/templates/expression_full_template_argument/FullTemplateArgument_templates_expression_full_template_argument_color_Color.h
 
-    ${ZSERIO_GEN_DIR}/templates/instantiate_imported/pkg
     ${ZSERIO_GEN_DIR}/templates/instantiate_imported/Test_string.cpp
     ${ZSERIO_GEN_DIR}/templates/instantiate_imported/Test_string.h
     ${ZSERIO_GEN_DIR}/templates/instantiate_imported/InstantiateImported.cpp
     ${ZSERIO_GEN_DIR}/templates/instantiate_imported/InstantiateImported.h
     ${ZSERIO_GEN_DIR}/templates/instantiate_imported/pkg/U32.cpp
     ${ZSERIO_GEN_DIR}/templates/instantiate_imported/pkg/U32.h
+
+    ${ZSERIO_GEN_DIR}/templates/instantiate_imported_nested/Nested_uint32.cpp
+    ${ZSERIO_GEN_DIR}/templates/instantiate_imported_nested/Nested_uint32.h
+    ${ZSERIO_GEN_DIR}/templates/instantiate_imported_nested/pkg/U32.cpp
+    ${ZSERIO_GEN_DIR}/templates/instantiate_imported_nested/pkg/U32.h
 
     ${ZSERIO_GEN_DIR}/templates/instantiate_nested_template/TStr.cpp
     ${ZSERIO_GEN_DIR}/templates/instantiate_nested_template/TStr.h
@@ -339,6 +343,7 @@ add_test_sources(
     ${ZSERIO_CPP_DIR}/ExpressionEnumTemplateArgumentConflictTest.cpp
     ${ZSERIO_CPP_DIR}/ExpressionFullTemplateArgumentTest.cpp
     ${ZSERIO_CPP_DIR}/InstantiateImportedTest.cpp
+    ${ZSERIO_CPP_DIR}/InstantiateImportedNestedTest.cpp
     ${ZSERIO_CPP_DIR}/InstantiateNestedTemplateTest.cpp
     ${ZSERIO_CPP_DIR}/InstantiateNotImportedTest.cpp
     ${ZSERIO_CPP_DIR}/InstantiateOnlyNestedTest.cpp

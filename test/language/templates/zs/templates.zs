@@ -8,6 +8,7 @@ import templates.expression_enum_template_argument_conflict.*;
 import templates.expression_full_template_argument.*;
 import templates.function_templated_return_type.*;
 import templates.instantiate_imported.*;
+import templates.instantiate_imported_nested.*;
 import templates.instantiate_nested_template.*;
 import templates.instantiate_not_imported.*;
 import templates.instantiate_only_nested.*;
