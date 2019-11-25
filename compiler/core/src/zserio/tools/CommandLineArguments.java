@@ -101,6 +101,13 @@ class CommandLineArguments
     }
 
     /**
+     * Gets whether the URI service code option is enabled.
+     *
+     * @returns True if command line arguments enable URI code option.
+     */
+    public boolean getWithUriServiceCode() { return withUriServiceCodeOption; }
+
+    /**
      * Gets whether the inspector code option is enabled.
      *
      * @returns True if command line arguments enable inspector code option.
@@ -239,6 +246,14 @@ class CommandLineArguments
         grpcCodeGroup.setRequired(false);
         options.addOptionGroup(grpcCodeGroup);
 
+        final OptionGroup uriServiceGroup = new OptionGroup();
+        option = new Option(OptionNameWithUriServiceCode, false, "enable code for URI services (default)");
+        uriServiceGroup.addOption(option);
+        option = new Option(OptionNameWithoutUriServiceCode, false, "disable code for URI services" );
+        uriServiceGroup.addOption(option);
+        uriServiceGroup.setRequired(false);
+        options.addOptionGroup(uriServiceGroup);
+
         // Blob Inspector interface has been DISABLED
         // final OptionGroup inspectorCodeGroup = new OptionGroup();
         // option = new Option(OptionNameWithInspectorCode, false, "enable code for Blob Inspector");
@@ -319,6 +334,7 @@ class CommandLineArguments
         topLevelPackageName = getOptionValue(OptionNameSetTopLevelPackage);
 
         withGrpcCodeOption = !hasOption(OptionNameWithoutGrpcCode) && !hasOption(OptionNameWithoutWriterCode);
+        withUriServiceCodeOption = !hasOption(OptionNameWithoutUriServiceCode) && !hasOption(OptionNameWithoutWriterCode);
         withInspectorCodeOption = hasOption(OptionNameWithInspectorCode);
         withRangeCheckCodeOption = hasOption(OptionNameWithRangeCheckCode);
         withSourcesAmalgamationOption = !hasOption(OptionNameWithoutSourcesAmalgamation);
@@ -387,6 +403,9 @@ class CommandLineArguments
     private static final String OptionNameSetTopLevelPackage = "setTopLevelPackage";
     private static final String OptionNameWithGrpcCode = "withGrpcCode";
     private static final String OptionNameWithoutGrpcCode = "withoutGrpcCode";
+    private static final String OptionNameWithUriServiceCode = "withUriServiceCode";
+    private static final String OptionNameWithoutUriServiceCode = "withoutUriServiceCode";
+
     private static final String OptionNameWithInspectorCode = "withInspectorCode";
 //    private static final String OptionNameWithoutInspectorCode = "withoutInspectorCode";
     private static final String OptionNameWithRangeCheckCode = "withRangeCheckCode";
@@ -411,6 +430,7 @@ class CommandLineArguments
     private String  topLevelPackageName;
     private boolean versionOption;
     private boolean withGrpcCodeOption;
+    private boolean withUriServiceCodeOption;
     private boolean withInspectorCodeOption;
     private boolean withRangeCheckCodeOption;
     private boolean withSourcesAmalgamationOption;

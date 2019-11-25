@@ -8,7 +8,7 @@ from testutils import getZserioApi
 class WithoutWriterCodeTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.api = getZserioApi(__file__, "without_grpc_code.zs", extraArgs=["-withoutGrpcCode"])
+        cls.api = getZserioApi(__file__, "without_grpc_code.zs", extraArgs=["-withoutGrpcCode", "-withoutUriServiceCode"])
 
     def testCheckService(self):
         self.assertFalse(hasattr(self.api, "Service"))
