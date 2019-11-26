@@ -81,6 +81,7 @@ test()
             CPP_TEST_NAME="*"
         fi
         local CMAKE_ARGS=("-DZSERIO_RUNTIME_INCLUDE_INSPECTOR=ON"
+                          "-DZSERIO_RUNTIME_INCLUDE_PUBSUB_MQTT=ON"
                           "-DZSERIO_RELEASE_ROOT=${UNPACKED_ZSERIO_RELEASE_DIR}"
                           "-DZSERIO_TEST_NAME=${CPP_TEST_NAME}"
                           "-DGRPC_ENABLED=${SWITCH_GRPC}"

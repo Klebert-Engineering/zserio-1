@@ -17,6 +17,7 @@ import zserio.ast.ExternType;
 import zserio.ast.FloatType;
 import zserio.ast.IntegerType;
 import zserio.ast.ServiceType;
+import zserio.ast.TopicType;
 import zserio.ast.StructureType;
 import zserio.ast.SqlDatabaseType;
 import zserio.ast.SqlTableType;
@@ -323,6 +324,12 @@ public class CppNativeMapper
         }
 
         @Override
+        public void visitTopicType(TopicType type)
+        {
+            thrownException = new ZserioEmitException("Topic type is not supported for C++ versions < C++11.");
+        }
+
+        @Override
         public void visitStringType(StringType type)
         {
             cppType = stdStringArrayType;
@@ -558,6 +565,12 @@ public class CppNativeMapper
         public void visitSqlDatabaseType(SqlDatabaseType type)
         {
             mapCompoundType(type);
+        }
+
+        @Override
+        public void visitTopicType(TopicType type)
+        {
+            thrownException = new ZserioEmitException("Topic type is not supported for C++ versions < C++11.");
         }
 
         @Override

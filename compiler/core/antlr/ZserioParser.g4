@@ -31,6 +31,7 @@ languageDirective
 
 typeDeclaration
     :   subtypeDeclaration
+    |   topicDeclaration
     |   structureDeclaration
     |   choiceDeclaration
     |   unionDeclaration
@@ -55,6 +56,11 @@ subtypeDeclaration
     :   SUBTYPE typeReference id SEMICOLON
     ;
 
+// TOPIC
+
+topicDeclaration
+    :   TOPIC id LPAREN STRING_LITERAL COMMA typeReference RPAREN SEMICOLON
+    ;
 
 // STRUCTURE
 

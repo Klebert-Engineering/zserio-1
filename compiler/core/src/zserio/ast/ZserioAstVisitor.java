@@ -139,6 +139,11 @@ public interface ZserioAstVisitor
     void visitRpc(Rpc rpc);
 
     /**
+     * Topic
+     */
+    void visitTopicType(TopicType topic);
+
+    /**
      * Visits function definition.
      *
      * @param function Function AST node.

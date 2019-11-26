@@ -45,6 +45,12 @@ public class ZserioAstWalker implements ZserioAstVisitor
     }
 
     @Override
+    public void visitTopicType(TopicType topic)
+    {
+        topic.visitChildren(this);
+    }
+
+    @Override
     public void visitChoiceType(ChoiceType choiceType)
     {
         choiceType.visitChildren(this);

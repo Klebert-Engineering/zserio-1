@@ -41,6 +41,7 @@ BIT_FIELD           : 'bit' ;
 BOOL                : 'bool' ;
 CASE                : 'case' ;
 CHOICE              : 'choice' ;
+TOPIC               : 'topic' ;
 CONST               : 'const' ;
 DEFAULT             : 'default' ;
 ENUM                : 'enum' ;

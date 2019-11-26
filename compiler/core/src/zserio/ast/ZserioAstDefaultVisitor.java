@@ -28,6 +28,10 @@ public class ZserioAstDefaultVisitor implements ZserioAstVisitor
     {}
 
     @Override
+    public void visitTopicType(TopicType subtype)
+    {}
+
+    @Override
     public void visitStructureType(StructureType structureType)
     {}
 

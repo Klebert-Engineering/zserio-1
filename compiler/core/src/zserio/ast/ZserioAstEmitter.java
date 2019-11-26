@@ -149,6 +149,19 @@ public class ZserioAstEmitter extends ZserioAstWalker
     }
 
     @Override
+    public void visitTopicType(TopicType topicType)
+    {
+        try
+        {
+            emitter.beginTopic(topicType);
+        }
+        catch (ZserioEmitException e)
+        {
+            throw new UncheckedZserioEmitException(e);
+        }
+    }
+
+    @Override
     public void visitSqlTableType(SqlTableType sqlTableType)
     {
         try

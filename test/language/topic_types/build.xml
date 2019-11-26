@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="topic_types" basedir="." default="run">
+    <testProperties testPath="language/topic_types" testName="topic_types"/>
+
+    <target name="prepare">
+        <testPrepare testName="topic_types"/>
+    </target>
+
+    <target name="gen.check" depends="prepare">
+        <testGenCheck testName="topic_types"/>
+    </target>
+
+    <target name="gen" depends="gen.check" unless="topic_types.zs.gen_is_uptodate">
+        <testGenClean testName="topic_types"/>
+        <testGen testName="topic_types" zsFile="topic_types.zs"/>
+    </target>
+
+    <target name="gen.checkWarnings" depends="gen">
+        <testGenCheckWarnings testName="topic_types"/>
+    </target>
+
+    <target name="compile" depends="gen.checkWarnings">
+        <testCompile testName="topic_types"/>
+    </target>
+
+    <target name="findbugs" depends="compile" if="findbugs.home_dir">
+        <testFindbugs testName="topic_types"/>
+    </target>
+
+    <target name="run" depends="findbugs">
+        <testRun testname="topic_types"/>
+    </target>
+
+    <target name="clean">
+        <testClean testName="topic_types"/>
+    </target>
+</project>

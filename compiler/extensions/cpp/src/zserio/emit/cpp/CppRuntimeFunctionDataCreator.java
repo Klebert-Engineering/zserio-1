@@ -6,6 +6,7 @@ import zserio.ast.ExternType;
 import zserio.ast.ZserioAstDefaultVisitor;
 import zserio.ast.ZserioType;
 import zserio.ast.FloatType;
+import zserio.ast.TopicType;
 import zserio.ast.StdIntegerType;
 import zserio.ast.StringType;
 import zserio.ast.VarIntegerType;
@@ -72,6 +73,12 @@ public class CppRuntimeFunctionDataCreator
         public void visitBitFieldType(BitFieldType type)
         {
             handleBitFieldType(type);
+        }
+
+        @Override
+        public void visitTopicType(TopicType type)
+        {
+            // do nothing
         }
 
         @Override

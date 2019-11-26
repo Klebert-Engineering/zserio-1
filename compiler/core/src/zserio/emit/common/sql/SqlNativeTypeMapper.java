@@ -5,6 +5,7 @@ import zserio.ast.BooleanType;
 import zserio.ast.ChoiceType;
 import zserio.ast.EnumType;
 import zserio.ast.FloatType;
+import zserio.ast.TopicType;
 import zserio.ast.StdIntegerType;
 import zserio.ast.StringType;
 import zserio.ast.StructureType;
@@ -91,6 +92,12 @@ public class SqlNativeTypeMapper
         public void visitFloatType(FloatType type)
         {
             sqlType = realType;
+        }
+
+        @Override
+        public void visitTopicType(TopicType type)
+        {
+            sqlType = blobType;
         }
 
         @Override

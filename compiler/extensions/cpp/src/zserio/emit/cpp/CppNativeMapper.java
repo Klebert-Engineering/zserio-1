@@ -16,6 +16,7 @@ import zserio.ast.ZserioType;
 import zserio.ast.EnumType;
 import zserio.ast.ExternType;
 import zserio.ast.FloatType;
+import zserio.ast.TopicType;
 import zserio.ast.ServiceType;
 import zserio.ast.StructureType;
 import zserio.ast.SqlDatabaseType;
@@ -250,6 +251,12 @@ public class CppNativeMapper
         }
 
         @Override
+        public void visitTopicType(TopicType type)
+        {
+            mapObjectArray();
+        }
+
+        @Override
         public void visitStringType(StringType type)
         {
             cppType = stdStringArrayType;
@@ -475,6 +482,12 @@ public class CppNativeMapper
         public void visitExternType(ExternType type)
         {
             cppType = bitBufferType;
+        }
+		
+		@Override
+        public void visitTopicType(TopicType type)
+        {
+            mapCompoundType(type);
         }
 
         @Override

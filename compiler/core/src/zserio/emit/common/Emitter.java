@@ -12,6 +12,7 @@ import zserio.ast.SqlTableType;
 import zserio.ast.StructureType;
 import zserio.ast.Subtype;
 import zserio.ast.UnionType;
+import zserio.ast.TopicType;
 
 /**
  * An Emitter is a class that emits (generates) code while traversing the Abstract Syntax Tree corresponding to
@@ -150,4 +151,13 @@ public interface Emitter
      * @throws In case of any internal error of the extension.
      */
     public void beginService(ServiceType service) throws ZserioEmitException;
+
+    /**
+     * Called when TopicType AST node begins.
+     *
+     * @param service Current TopicType AST node.
+     *
+     * @throws In case of any internal error of the extension.
+     */
+    public void beginTopic(TopicType topic) throws ZserioEmitException;
 }

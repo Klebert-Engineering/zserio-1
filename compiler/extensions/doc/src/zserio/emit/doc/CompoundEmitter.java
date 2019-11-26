@@ -24,6 +24,7 @@ import zserio.ast.StructureType;
 import zserio.ast.SqlConstraint;
 import zserio.ast.SqlDatabaseType;
 import zserio.ast.SqlTableType;
+import zserio.ast.TopicType;
 import zserio.ast.TypeInstantiation;
 import zserio.ast.UnionType;
 import zserio.emit.common.ExpressionFormatter;
@@ -364,6 +365,11 @@ public class CompoundEmitter extends DefaultHtmlEmitter
         {
             return "SQL Table";
         }
+        else if (compound instanceof TopicType)
+        {
+            // HACK
+            return "TOPIC";
+        }
 
         throw new RuntimeException("unknown category "
                 + compound.getClass().getName());
@@ -390,6 +396,11 @@ public class CompoundEmitter extends DefaultHtmlEmitter
         else if (compound instanceof SqlTableType)
         {
             return "sql_table ";
+        }
+        else if (compound instanceof TopicType)
+        {
+            // HACK
+            return "TOPIC ";
         }
 
         throw new RuntimeException("unknown category "

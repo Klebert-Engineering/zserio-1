@@ -242,6 +242,22 @@ public class ZserioAstBuilder extends ZserioParserBaseVisitor<Object>
     }
 
     @Override
+    public TopicType visitTopicDeclaration(ZserioParser.TopicDeclarationContext ctx)
+    {
+        final AstLocation location = new AstLocation(ctx.id().getStart());
+        final String name = ctx.id().getText();
+
+        final String topicName = ctx.STRING_LITERAL().getText();
+        final TypeReference valueType = visitTypeReference(ctx.typeReference());
+
+        final DocComment docComment = docCommentManager.findDocComment(ctx);
+
+        final TopicType topicType = new TopicType(location, currentPackage, name, docComment, topicName, valueType);
+
+        return topicType;
+    }
+
+    @Override
     public ChoiceType visitChoiceDeclaration(ZserioParser.ChoiceDeclarationContext ctx)
     {
         final AstLocation location = new AstLocation(ctx.id().getStart());
