@@ -54,7 +54,7 @@ public class TemplatesErrorTest
     @Test
     public void enumNotATemplate()
     {
-        final String error = "enum_not_a_template_error.zs:11:5: 'Enumeration' is not a template!";
+        final String error = "enum_not_a_template_error.zs:11:5: 'Enumeration' is not a templatable type!";
         assertTrue(zserioErrors.isPresent(error));
     }
 
@@ -75,11 +75,25 @@ public class TemplatesErrorTest
     }
 
     @Test
+    public void hashedTemplateNameClash()
+    {
+        final String errors[] =
+        {
+            "hashed_template_name_clash_error.zs:21:5: " +
+                    "In instantiation of 'Test' required from here",
+            "hashed_template_name_clash_error.zs:25:8: " +
+                    "    First defined here",
+            "hashed_template_name_clash_error.zs:8:8: " +
+                    "'Test_A_uint32_F2945EA9' is already defined in package 'hashed_template_name_clash_error'!"
+        };
+        assertTrue(zserioErrors.isPresent(errors));
+    }
+
+    @Test
     public void instantiateDuplicated()
     {
         final String errors[] =
         {
-            "instantiate_duplicated_error.zs:8:13: In instantiation of 'Test' required from here",
             "instantiate_duplicated_error.zs:8:26:     First requested here",
             "instantiate_duplicated_error.zs:9:26: Ambiguous request to instantiate template 'Test'!"
         };
@@ -102,7 +116,6 @@ public class TemplatesErrorTest
     {
         final String errors[] =
         {
-            "instantiate_duplicated_via_import_error.zs:5:13: In instantiation of 'Test' required from here",
             "instantiate_duplicated_via_import_error.zs:5:26:     First requested here",
             "pkg.zs:8:26: Ambiguous request to instantiate template 'Test'!"
         };
@@ -124,19 +137,6 @@ public class TemplatesErrorTest
         {
             "instantiate_name_clash_error.zs:13:26:     First defined here",
             "instantiate_name_clash_error.zs:14:27: 'U32' is already defined in this package!"
-        };
-        assertTrue(zserioErrors.isPresent(errors));
-    }
-
-    @Test
-    public void instantiateNameClashWithTemplate()
-    {
-        final String errors[] =
-        {
-            "instantiate_name_clash_with_template_error.zs:10:5: In instantiation of 'Test' required from here",
-            "instantiate_name_clash_with_template_error.zs:13:26:     First defined here",
-            "instantiate_name_clash_with_template_error.zs:3:8: " +
-                    "'Test_uint32' is already defined in package 'instantiate_name_clash_with_template_error'!"
         };
         assertTrue(zserioErrors.isPresent(errors));
     }
@@ -180,60 +180,6 @@ public class TemplatesErrorTest
                 "Field 'field' cannot be a sql table!";
         assertTrue(zserioErrors.isPresent(error));
     }
-
-    @Test
-    public void instantiationNameClashAcrossPackages()
-    {
-        final String errors[] =
-        {
-            "pkg2.zs:12:5: In instantiation of 'TestStruct' required from here",
-            "pkg1.zs:12:5:     First instantiated here",
-            "test_struct.zs:3:8: Instantiation name 'TestStruct_Test' already exits!"
-        };
-        assertTrue(zserioErrors.isPresent(errors));
-    }
-
-    @Test
-    public void instantiationNameClash()
-    {
-        final String errors[] =
-        {
-            "instantiation_name_clash_error.zs:38:5: In instantiation of 'TestStruct' required from here",
-            "instantiation_name_clash_error.zs:33:5: In instantiation of 'Template' required from here",
-            "instantiation_name_clash_error.zs:32:5:     First instantiated here",
-            "instantiation_name_clash_error.zs:38:5:     Required in instantiation of 'TestStruct' from here",
-            "instantiation_name_clash_error.zs:23:8: Instantiation name 'Template_A_B_C' already exits!"
-        };
-        assertTrue(zserioErrors.isPresent(errors));
-    }
-
-    @Test
-    public void instantiationNameClashOtherTemplate()
-    {
-        final String errors[] =
-        {
-            "instantiation_name_clash_other_template_error.zs:21:5: " +
-                    "In instantiation of 'Test' required from here",
-            "instantiation_name_clash_other_template_error.zs:20:5: " +
-                    "    First seen in instantiation of 'Test_A' from here",
-            "instantiation_name_clash_other_template_error.zs:8:8: " +
-                    "Instantiation name 'Test_A_uint32' already exits!"
-        };
-        assertTrue(zserioErrors.isPresent(errors));
-    };
-
-    @Test
-    public void instantiationNameClashWithType()
-    {
-        final String errors[] =
-        {
-            "instantiation_name_clash_with_type_error.zs:15:5: In instantiation of 'Test' required from here",
-            "instantiation_name_clash_with_type_error.zs:3:8:     First defined here",
-            "instantiation_name_clash_with_type_error.zs:8:8: " +
-                    "'Test_uint32' is already defined in package 'instantiation_name_clash_with_type_error'!",
-        };
-        assertTrue(zserioErrors.isPresent(errors));
-    };
 
     @Test
     public void instantiationViaSubtype()

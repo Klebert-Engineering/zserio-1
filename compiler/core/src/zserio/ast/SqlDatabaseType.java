@@ -41,8 +41,7 @@ public class SqlDatabaseType extends CompoundType
         // check if all fields are SQL tables
         for (Field databaseField : getFields())
         {
-            final ZserioType fieldBaseType =
-                    databaseField.getTypeInstantiation().getTypeReference().getBaseTypeReference().getType();
+            final ZserioType fieldBaseType = databaseField.getTypeInstantiation().getBaseType();
             if (!(fieldBaseType instanceof SqlTableType))
             {
                 throw new ParserException(databaseField,
@@ -52,8 +51,7 @@ public class SqlDatabaseType extends CompoundType
     }
 
     @Override
-    SqlDatabaseType instantiateImpl(String name, List<TemplateArgument> templateArguments,
-            Package instantiationPackage)
+    SqlDatabaseType instantiateImpl(List<TemplateArgument> templateArguments, Package instantiationPackage)
     {
         throw new InternalError("SqlDatabaseType is not templatable!");
     }

@@ -1,10 +1,11 @@
 package zserio.emit.doc;
 
-import zserio.ast.ArrayType;
-import zserio.ast.BitFieldType;
+import zserio.ast.ArrayInstantiation;
 import zserio.ast.BooleanType;
 import zserio.ast.ChoiceType;
 import zserio.ast.Constant;
+import zserio.ast.DynamicBitFieldType;
+import zserio.ast.FixedBitFieldType;
 import zserio.ast.ServiceType;
 import zserio.ast.EnumType;
 import zserio.ast.FloatType;
@@ -28,12 +29,6 @@ import zserio.emit.common.ZserioEmitException;
  */
 public class HtmlModuleNameSuffixVisitor extends ZserioAstDefaultVisitor
 {
-    @Override
-    public void visitArrayType(ArrayType type)
-    {
-        htmlModuleNameSuffix = "ARRAY";
-    }
-
     @Override
     public void visitBooleanType(BooleanType type)
     {
@@ -77,12 +72,21 @@ public class HtmlModuleNameSuffixVisitor extends ZserioAstDefaultVisitor
     }
 
     @Override
-    public void visitBitFieldType(BitFieldType type)
+    public void visitFixedBitFieldType(FixedBitFieldType type)
     {
         if (type.isSigned())
-            htmlModuleNameSuffix = "SIGNED_BIT_FIELD";
+            htmlModuleNameSuffix = "SIGNED_FIXED_BIT_FIELD";
         else
-            htmlModuleNameSuffix = "BIT";
+            htmlModuleNameSuffix = "UNSIGNED_FIXED_BIT_FIELD";
+    }
+
+    @Override
+    public void visitDynamicBitFieldType(DynamicBitFieldType type)
+    {
+        if (type.isSigned())
+            htmlModuleNameSuffix = "SIGNED_DYNAMIC_BIT_FIELD";
+        else
+            htmlModuleNameSuffix = "UNSIGNED_DYNAMIC_BIT_FIELD";
     }
 
     @Override
@@ -131,7 +135,9 @@ public class HtmlModuleNameSuffixVisitor extends ZserioAstDefaultVisitor
     @Override
     public void visitTypeInstantiation(TypeInstantiation type)
     {
-        htmlModuleNameSuffix = "TYPE_INSTANTIATION";
+        if (type instanceof ArrayInstantiation)
+            type = ((ArrayInstantiation) type).getElementTypeInstantiation();
+        type.getType().accept(this);
     }
 
     @Override
@@ -144,7 +150,6 @@ public class HtmlModuleNameSuffixVisitor extends ZserioAstDefaultVisitor
     public void visitUnionType(UnionType type)
     {
         htmlModuleNameSuffix = "UNION";
-
     }
 
     @Override

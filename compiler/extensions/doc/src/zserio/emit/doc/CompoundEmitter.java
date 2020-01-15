@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import zserio.ast.ArrayType;
+import zserio.ast.ArrayInstantiation;
 import zserio.ast.AstNode;
 import zserio.ast.ChoiceCase;
 import zserio.ast.ChoiceCaseExpression;
@@ -13,6 +13,8 @@ import zserio.ast.ChoiceDefault;
 import zserio.ast.ChoiceType;
 import zserio.ast.CompoundType;
 import zserio.ast.DocComment;
+import zserio.ast.ParameterizedTypeInstantiation;
+import zserio.ast.ParameterizedTypeInstantiation.InstantiatedParameter;
 import zserio.ast.ServiceType;
 import zserio.ast.ZserioType;
 import zserio.ast.EnumItem;
@@ -149,9 +151,10 @@ public class CompoundEmitter extends DefaultHtmlEmitter
 
         public boolean getIsArrayImplicit()
         {
-            final ZserioType type = field.getTypeInstantiation().getTypeReference().getType();
+            final TypeInstantiation instantiation = field.getTypeInstantiation();
 
-            return (type instanceof ArrayType) ? ((ArrayType)type).isImplicit() : false;
+            return (instantiation instanceof ArrayInstantiation) ?
+                    ((ArrayInstantiation)instantiation).isImplicit() : false;
         }
 
         public LinkedType getType() throws ZserioEmitException
@@ -202,14 +205,18 @@ public class CompoundEmitter extends DefaultHtmlEmitter
 
         public List<Expression> getArguments()
         {
-            final ZserioType type = field.getTypeInstantiation().getTypeReference().getType();
-            final TypeInstantiation inst = (type instanceof ArrayType) ?
-                    ((ArrayType)type).getElementTypeInstantiation() : field.getTypeInstantiation();
+            TypeInstantiation typeInstantiation = field.getTypeInstantiation();
+            if (typeInstantiation instanceof ArrayInstantiation)
+                typeInstantiation = ((ArrayInstantiation)typeInstantiation).getElementTypeInstantiation();
+
             final List<Expression> arguments = new ArrayList<Expression>();
-            for (TypeInstantiation.InstantiatedParameter instantiatedParameter :
-                    inst.getInstantiatedParameters())
+            if (typeInstantiation instanceof ParameterizedTypeInstantiation)
             {
-                arguments.add(instantiatedParameter.getArgumentExpression());
+                for (InstantiatedParameter instantiatedParameter :
+                        ((ParameterizedTypeInstantiation)typeInstantiation).getInstantiatedParameters())
+                {
+                    arguments.add(instantiatedParameter.getArgumentExpression());
+                }
             }
 
             return arguments;
@@ -379,7 +386,7 @@ public class CompoundEmitter extends DefaultHtmlEmitter
     {
         if (compound instanceof StructureType)
         {
-            return "";
+            return "struct ";
         }
         else if (compound instanceof ChoiceType)
         {

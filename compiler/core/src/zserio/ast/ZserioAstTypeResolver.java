@@ -69,6 +69,13 @@ public class ZserioAstTypeResolver extends ZserioAstWalker
     }
 
     @Override
+    public void visitTypeInstantiation(TypeInstantiation typeInstantiation)
+    {
+        typeInstantiation.visitChildren(this);
+        typeInstantiation.resolve();
+    }
+
+    @Override
     public void visitTemplateArgument(TemplateArgument templateArgument)
     {
         templateArgument.visitChildren(this);
@@ -89,5 +96,5 @@ public class ZserioAstTypeResolver extends ZserioAstWalker
             templatableType.visitChildren(this);
     }
 
-    private List<Subtype> subtypesOnStack = new ArrayList<Subtype>();
+    private final List<Subtype> subtypesOnStack = new ArrayList<Subtype>();
 }
