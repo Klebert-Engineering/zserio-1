@@ -54,12 +54,11 @@ public class TopicType extends CompoundType
     }
 
     @Override
-    TopicType instantiateImpl(String name, List<TemplateArgument> templateArguments,
+    TopicType instantiateImpl(List<TemplateArgument> templateArguments,
                               Package instantiationPackage)
     {
         // TODO: Template parameters are not supported.
-
-        return new TopicType(getLocation(), instantiationPackage, name, getDocComment(), topicName, valueType);
+        return new TopicType(getLocation(), instantiationPackage, getName(), getDocComment(), topicName, valueType);
     }
 
     public String getTopicName()
