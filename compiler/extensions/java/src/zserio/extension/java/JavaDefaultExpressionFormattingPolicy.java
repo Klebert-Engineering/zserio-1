@@ -134,8 +134,10 @@ public abstract class JavaDefaultExpressionFormattingPolicy extends DefaultExpre
     @Override
     public String getStringLiteral(Expression expr)
     {
-        // string literals in Java does not support hexadecimal escapes
-        return StringEscapeConverter.convertHexToUnicodeToEscapes(expr.getText());
+        // string literals in Java does not support hexadecimal escapes and use a different octal escape
+        // syntax ('\ooo') than Zserio ('\0ooo')
+        return StringEscapeConverter.convertHexToUnicodeToEscapes(
+                StringEscapeConverter.convertOctalEscapes(expr.getText()));
     }
 
     @Override

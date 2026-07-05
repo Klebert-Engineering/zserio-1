@@ -157,7 +157,7 @@ class ConstantsTest(unittest.TestCase):
         self.assertEqual("Test string with hexadecimal escape \x19", self.api.HEX_ESC_STRING_CONSTANT)
 
     def testOctalEscStringConstant(self):
-        self.assertEqual("Test string with octal escape \031", self.api.OCTAL_ESC_STRING_CONSTANT)
+        self.assertEqual("Test string with octal escape \031 \156 \377", self.api.OCTAL_ESC_STRING_CONSTANT)
 
     def testStringPascalCaseConstant(self):
         self.assertEqual("Different naming convention", self.api.STRING_PASCAL_CASE_CONSTANT)

@@ -20,7 +20,9 @@ public final class CppLiteralFormatter
     public static String formatStringLiteral(String value)
     {
         // string literals in C++ does not support unicode escapes from interval <'\u0000', '\u0031'>
-        final String escapedStringLiteral = StringEscapeConverter.convertUnicodeToHexEscapes(value);
+        // Zserio octal escapes ('\0ooo') also need to be converted to the C++ octal escape syntax ('\ooo')
+        final String octalEscaped = StringEscapeConverter.convertOctalEscapes(value);
+        final String escapedStringLiteral = StringEscapeConverter.convertUnicodeToHexEscapes(octalEscaped);
         return "\"" + escapedStringLiteral + "\"";
     }
 

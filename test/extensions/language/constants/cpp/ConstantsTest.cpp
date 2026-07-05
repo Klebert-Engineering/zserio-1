@@ -419,9 +419,9 @@ TEST(ConstantsTest, hexEscStringConstant)
 
 TEST(ConstantsTest, octalEscStringConstant)
 {
-    static_assert(OCTAL_ESC_STRING_CONSTANT.size() == 31, "shall be constexpr");
+    static_assert(OCTAL_ESC_STRING_CONSTANT.size() == 35, "shall be constexpr");
 
-    ASSERT_EQ("Test string with octal escape \031"_sv, OCTAL_ESC_STRING_CONSTANT);
+    ASSERT_EQ("Test string with octal escape \031 \156 \377"_sv, OCTAL_ESC_STRING_CONSTANT);
 }
 
 TEST(ConstantsTest, stringPascalCaseConstant)

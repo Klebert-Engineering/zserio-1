@@ -310,7 +310,8 @@ public class ConstantsTest
     @Test
     public void octalEscStringConstant()
     {
-        assertEquals("Test string with octal escape \031", OCTAL_ESC_STRING_CONSTANT.OCTAL_ESC_STRING_CONSTANT);
+        assertEquals("Test string with octal escape \031 \156 \377",
+                OCTAL_ESC_STRING_CONSTANT.OCTAL_ESC_STRING_CONSTANT);
     }
 
     @Test
