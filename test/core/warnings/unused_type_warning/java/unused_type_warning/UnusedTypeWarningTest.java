@@ -65,5 +65,28 @@ public class UnusedTypeWarningTest
         assertTrue(zserioWarnings.isPresent(warning));
     }
 
+    @Test
+    public void unusedTemplate()
+    {
+        final String warning = "unused_type_warning.zs:96:8: "
+                + "Type 'unused_type_warning.UnusedTemplate' is not used.";
+        assertTrue(zserioWarnings.isPresent(warning));
+    }
+
+    @Test
+    public void unusedTemplateWithUnusedParameter()
+    {
+        final String warning = "unused_type_warning.zs:102:8: "
+                + "Type 'unused_type_warning.UnusedTemplateWithUnusedParameter' is not used.";
+        assertTrue(zserioWarnings.isPresent(warning));
+    }
+
+    @Test
+    public void unusedTemplateParameter()
+    {
+        final String warning = "unused_type_warning.zs:102:42: Template parameter 'T' is not used.";
+        assertTrue(zserioWarnings.isPresent(warning));
+    }
+
     private static ZserioErrorOutput zserioWarnings;
 }

@@ -107,6 +107,7 @@ public final class ZserioAstChecker extends ZserioAstWalker
         }
         else
         {
+            checkTemplate(structureType);
             visitInstantiations(structureType);
         }
     }
@@ -127,6 +128,7 @@ public final class ZserioAstChecker extends ZserioAstWalker
         }
         else
         {
+            checkTemplate(choiceType);
             visitInstantiations(choiceType);
         }
     }
@@ -160,6 +162,7 @@ public final class ZserioAstChecker extends ZserioAstWalker
         }
         else
         {
+            checkTemplate(unionType);
             visitInstantiations(unionType);
         }
     }
@@ -216,6 +219,7 @@ public final class ZserioAstChecker extends ZserioAstWalker
         }
         else
         {
+            checkTemplate(sqlTableType);
             visitInstantiations(sqlTableType);
         }
     }
@@ -308,6 +312,28 @@ public final class ZserioAstChecker extends ZserioAstWalker
         instantiateType.visitChildren(this);
         checkDocComments(instantiateType, WarningsConfig.DOC_COMMENT_MISSING,
                 "instantiate type '" + instantiateType.getName() + "'");
+    }
+
+    private void checkTemplate(TemplatableType template)
+    {
+        // report template parameters which are not used within the template body
+        for (TemplateParameter templateParameter : template.getTemplateParameters())
+        {
+            if (!templateParameter.isUsed())
+            {
+                ZserioToolPrinter.printWarning(templateParameter,
+                        "Template parameter '" + templateParameter.getName() + "' is not used.", warningsConfig,
+                        WarningsConfig.UNUSED);
+            }
+        }
+
+        // report template which is never instantiated (and therefore never used)
+        if (template.getInstantiations().isEmpty())
+        {
+            ZserioToolPrinter.printWarning(template,
+                    "Type '" + ZserioTypeUtil.getFullName(template) + "' is not used.", warningsConfig,
+                    WarningsConfig.UNUSED);
+        }
     }
 
     private void visitInstantiations(ZserioTemplatableType template)

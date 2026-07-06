@@ -61,5 +61,24 @@ public final class TemplateParameter extends AstNodeBase implements ZserioType
         return -1;
     }
 
+    /**
+     * Marks this template parameter as used (i.e. referenced within the template body).
+     */
+    void setUsed()
+    {
+        used = true;
+    }
+
+    /**
+     * Gets whether this template parameter is used within the template body.
+     *
+     * @return True if the template parameter is referenced within the template body, otherwise false.
+     */
+    boolean isUsed()
+    {
+        return used;
+    }
+
     private final String name;
+    private boolean used = false;
 }

@@ -11,7 +11,7 @@ class UnusedTypeWarningTest(unittest.TestCase):
             __file__,
             "unused_type_warning.zs",
             extraArgs=["-withWarnings", "unused"],
-            expectedWarnings=6,
+            expectedWarnings=9,
             errorOutputDict=cls.warnings,
         )
 

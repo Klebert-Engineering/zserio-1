@@ -138,7 +138,9 @@ public final class TypeReference extends AstNodeBase
                     : -1;
             if (foundIndex != -1)
             {
-                symbol = templateParameters.get(foundIndex);
+                final TemplateParameter templateParameter = templateParameters.get(foundIndex);
+                templateParameter.setUsed();
+                symbol = templateParameter;
             }
             else
             {
