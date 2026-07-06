@@ -176,6 +176,7 @@ class ZserioTreeCreator:
                     "ZserioTreeCreator: Expecting array in field " f"'{member_info.schema_name}'!"
                 )
 
+            value = ZserioTreeCreator._convert_value(value, member_info.type_info.py_type)
             if not isinstance(value, member_info.type_info.py_type):
                 raise PythonRuntimeException(
                     f"ZserioTreeCreator: Unexpected value type '{type(value)}', "
@@ -261,11 +262,13 @@ class ZserioTreeCreator:
             )
 
         element_type_info = self._member_info_stack[-1].type_info
-        if value is not None and not isinstance(value, element_type_info.py_type):
-            raise PythonRuntimeException(
-                f"ZserioTreeCreator: Unexpected value type '{type(value)}', expecting "
-                f"'{element_type_info.py_type}'!"
-            )
+        if value is not None:
+            value = ZserioTreeCreator._convert_value(value, element_type_info.py_type)
+            if not isinstance(value, element_type_info.py_type):
+                raise PythonRuntimeException(
+                    f"ZserioTreeCreator: Unexpected value type '{type(value)}', expecting "
+                    f"'{element_type_info.py_type}'!"
+                )
 
         self._value_stack[-1].append(value)
 
@@ -285,6 +288,14 @@ class ZserioTreeCreator:
 
     def _get_type_info(self) -> typing.Union[TypeInfo, RecursiveTypeInfo]:
         return self._member_info_stack[-1].type_info if self._member_info_stack else self._root_type_info
+
+    @staticmethod
+    def _convert_value(value: typing.Any, py_type: type) -> typing.Any:
+        # JSON numbers without a fractional part are parsed as int, so accept an int value where a
+        # float is expected and convert it (bool is a subclass of int and must be left untouched).
+        if py_type is float and isinstance(value, int) and not isinstance(value, bool):
+            return float(value)
+        return value
 
     @staticmethod
     def _find_member_info(type_info: typing.Union[TypeInfo, RecursiveTypeInfo], name: str) -> MemberInfo:

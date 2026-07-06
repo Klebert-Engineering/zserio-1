@@ -5,6 +5,7 @@ from test_object.api import CreatorEnum, CreatorBitmask, CreatorObject
 from zserio.exception import PythonRuntimeException
 from zserio.creator import ZserioTreeCreator
 from zserio.bitbuffer import BitBuffer
+from zserio.typeinfo import TypeInfo, MemberInfo, TypeAttribute, MemberAttribute
 
 
 class ZserioTreeCreatorTest(unittest.TestCase):
@@ -89,6 +90,51 @@ class ZserioTreeCreatorTest(unittest.TestCase):
         self.assertEqual(bytes([0xCA, 0xFE]), obj.bytes_array[0])
         self.assertEqual(False, obj.optional_bool)
         self.assertEqual("optionalNested", obj.optional_nested.text)
+
+    def test_set_value_int_to_float(self):
+        # JSON numbers without a fractional part are parsed as int, so an int must be accepted and
+        # converted where a float is expected, both for a scalar field and for a float array element.
+        class FloatObject:
+            def __init__(self):
+                self.float_field = None
+                self.float_array = None
+
+        float_object_type_info = TypeInfo(
+            "FloatObject",
+            FloatObject,
+            attributes={
+                TypeAttribute.FIELDS: [
+                    MemberInfo(
+                        "floatField",
+                        TypeInfo("float32", float),
+                        attributes={MemberAttribute.PROPERTY_NAME: "float_field"},
+                    ),
+                    MemberInfo(
+                        "floatArray",
+                        TypeInfo("float64", float),
+                        attributes={
+                            MemberAttribute.PROPERTY_NAME: "float_array",
+                            MemberAttribute.ARRAY_LENGTH: None,
+                        },
+                    ),
+                ]
+            },
+        )
+
+        creator = ZserioTreeCreator(float_object_type_info)
+        creator.begin_root()
+        creator.set_value("floatField", 13)  # int accepted where float32 is expected
+        creator.begin_array("floatArray")
+        creator.add_value_element(0)  # int accepted where float64 element is expected
+        creator.add_value_element(1)
+        creator.end_array()
+        obj = creator.end_root()
+
+        self.assertIsInstance(obj.float_field, float)
+        self.assertEqual(13.0, obj.float_field)
+        self.assertEqual([0.0, 1.0], obj.float_array)
+        for element in obj.float_array:
+            self.assertIsInstance(element, float)
 
     def test_exceptions_before_root(self):
         creator = ZserioTreeCreator(CreatorObject.type_info())
