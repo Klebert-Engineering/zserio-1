@@ -126,10 +126,23 @@ public final class ChoiceEmitterTemplateData extends CompoundTypeTemplateData
                     throws ZserioExtensionException
             {
                 final ExpressionFormatter javaExpressionFormatter = context.getJavaExpressionFormatter();
-                final ExpressionFormatter javaCaseExpressionFormatter =
-                        context.getJavaCaseExpressionFormatter();
                 expressionForIf = javaExpressionFormatter.formatGetter(choiceExpression);
-                expressionForCase = javaCaseExpressionFormatter.formatGetter(choiceExpression);
+
+                // Java requires switch case labels to be constant expressions. Case expressions for
+                // integer selectors may use built-in operators (e.g. numbits, valueof) or constants
+                // defined via them, which do not format to Java constant expressions. Emit the evaluated
+                // integer value in such cases (enum selectors keep the enum item name).
+                if (choiceExpression.getExprType() == Expression.ExpressionType.INTEGER &&
+                        choiceExpression.getIntegerValue() != null)
+                {
+                    expressionForCase = choiceExpression.getIntegerValue().toString();
+                }
+                else
+                {
+                    final ExpressionFormatter javaCaseExpressionFormatter =
+                            context.getJavaCaseExpressionFormatter();
+                    expressionForCase = javaCaseExpressionFormatter.formatGetter(choiceExpression);
+                }
             }
 
             public String getExpressionForIf()

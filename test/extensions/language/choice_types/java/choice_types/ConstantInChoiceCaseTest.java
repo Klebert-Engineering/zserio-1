@@ -24,4 +24,32 @@ public class ConstantInChoiceCaseTest
                 SerializeUtil.deserialize(ConstantInChoiceCase.class, bitBuffer, UINT8_CONST.UINT8_CONST);
         assertEquals(constantInChoiceCase, readConstantInChoiceCase);
     }
+
+    @Test
+    public void writeReadValueOfCase()
+    {
+        // selector 1 = valueof(ValueOfEnum.ONE)
+        final ConstantInChoiceCase constantInChoiceCase = new ConstantInChoiceCase((short)1);
+        constantInChoiceCase.setValueOfCase((short)42);
+
+        final BitBuffer bitBuffer = SerializeUtil.serialize(constantInChoiceCase);
+
+        final ConstantInChoiceCase readConstantInChoiceCase =
+                SerializeUtil.deserialize(ConstantInChoiceCase.class, bitBuffer, (short)1);
+        assertEquals(constantInChoiceCase, readConstantInChoiceCase);
+    }
+
+    @Test
+    public void writeReadValueOfConstCase()
+    {
+        // selector 2 = VALUEOF_CONST (defined via valueof)
+        final ConstantInChoiceCase constantInChoiceCase = new ConstantInChoiceCase((short)2);
+        constantInChoiceCase.setValueOfConstCase((short)42);
+
+        final BitBuffer bitBuffer = SerializeUtil.serialize(constantInChoiceCase);
+
+        final ConstantInChoiceCase readConstantInChoiceCase =
+                SerializeUtil.deserialize(ConstantInChoiceCase.class, bitBuffer, (short)2);
+        assertEquals(constantInChoiceCase, readConstantInChoiceCase);
+    }
 }
